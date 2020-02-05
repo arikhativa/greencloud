@@ -1,5 +1,5 @@
 
-NAME := greencloud.0.1.5
+NAME := greencloud.0.2
 
 SRC_DIR = src
 OBJ_DIR = obj
@@ -77,6 +77,5 @@ clean:
 	rm *.out
 #	rm $(LIB_DIR)/*.a
 	rm $(OBJ_DIR)/*.o
-	rm storage.fs
 
 re: clean all

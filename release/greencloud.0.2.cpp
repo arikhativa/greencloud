@@ -5,18 +5,24 @@
 #include <errno.h>      	// errno
 
 // C++ include ----------------------------------------------------------------
-#include <memory>			// std::unique_ptr
+#include <memory>			// std::unique_ptr, std::shared_ptr
 #include <iostream>			// std::cerr
 #include <thread>			// std::thread
 
 // local include --------------------------------------------------------------
 #include "nbd_driver_proxy.hpp"
 #include "disk_storage.hpp"
+#include "driver_data.hpp"
 #include "epoll.hpp"
 #include "monitor.hpp"
 #include "handleton.hpp"
 #include "logger.hpp"
 #include "globals.hpp"
+#include "thread_pool.hpp"
+#include "tptask.hpp"
+#include "tp_sys_task.hpp"
+#include "factory.hpp"
+#include "nbd_tasks.hpp"
 
 #define LOG(lvl, msg) s_log->Write(lvl, msg, __FILE__, __LINE__)
 
@@ -47,6 +53,7 @@ enum RunLoop
 	RUN = 0,
 	STOP
 };
+
 
 
 // Global ---------------------------------------------------------------------
@@ -87,8 +94,10 @@ int main(int ac, char* av[])
 				size_t blk_size = std::stoull(av[1]);
 				size_t num_of_blocks = std::stoull(av[2]);
 
-				driver.reset(new NBDDriverProxy(blk_size, num_of_blocks, av[3]));
-				storage.reset(new DiskStorage(STORAGE_FILE_PATH, blk_size * num_of_blocks));
+				driver.reset(new NBDDriverProxy(blk_size, num_of_blocks,
+					 							av[3]));
+				storage.reset(new DiskStorage(STORAGE_FILE_PATH,
+					 							blk_size * num_of_blocks));
 				break ;
 			}
 			default:
@@ -101,7 +110,8 @@ int main(int ac, char* av[])
 	}
 	catch (EpollError& e)
 	{
-		if (EINTR == e.m_errno)	// Epoll throws exception when a signal is recived
+		// Epoll throws exception when a signal is recived
+		if (EINTR == e.m_errno)
 		{
 			driver->Disconnect();
 			goto exit_safe;
@@ -120,52 +130,80 @@ int main(int ac, char* av[])
 
 // Static funcs ---------------------------------------------------------------
 
-static void ThreadFunc(std::shared_ptr<DriverProxy> driver,
-							std::shared_ptr<Storage> storage,
-							std::unique_ptr<DriverData> data)
-{
-	switch (data->m_type)
-	{
-		case READ:
-		{
-			data = storage->Read(std::move(data));
+// static void ThreadFunc(std::shared_ptr<DriverProxy> driver,
+// 							std::shared_ptr<Storage> storage,
+// 							std::unique_ptr<DriverData> data)
+// {
+// 	switch (data->m_type)
+// 	{
+// 		case READ:
+// 		{
+// 			data = storage->Read(std::move(data));
+//
+// 			break ;
+// 		}
+// 		case WRITE:
+// 		{
+// 			data = storage->Write(std::move(data));
+// 			break ;
+// 		}
+// 		case DISCONNECT:
+// 		{
+//
+// 			LOG(LOG_DEBUG, "ThreadFunc() case DISCONNECT:");
+// 			goto exit_safe;
+//
+// 			break ;
+// 		}
+// 		default:
+// 		break ;
+// 	}
+//
+// 	driver->SendReply(std::move(data));
+//
+// 	exit_safe:
+//
+// 	return ;
+// }
+//
+// static void AddTasksToFactory(Factory<TPTask, DataType,
+// 								std::unique_ptr<ThreadInfo> >& factory)
+// {
+// 	factory.Add(READ, NBDRead::Create);
+// 	factory.Add(WRITE, NBDWrite::Create);
+// 	factory.Add(FLUSH, NBDFlush::Create);
+// 	factory.Add(TRIM, NBDTrim::Create);
+// 	factory.Add(BAD_REQUEST, NBDBadRequest::Create);
+// }
 
-			break ;
-		}
-		case WRITE:
-		{
-			data = storage->Write(std::move(data));
-			break ;
-		}
-		case DISCONNECT:
-		{
-
-			LOG(LOG_DEBUG, "ThreadFunc() case DISCONNECT:");
-			goto exit_safe;
-
-			break ;
-		}
-		default:
-		break ;
-	}
-
-	driver->SendReply(std::move(data));
-
-	exit_safe:
-
-	return ;
-}
 
 static void RunGreenCloude(std::shared_ptr<DriverProxy> driver,
 							std::shared_ptr<Storage> storage)
 {
 	std::unique_ptr<Monitor> monitor(new Epoll(MAX_EVENTS_TO_WAKE));
 	std::unique_ptr<DriverData> data;
+	Factory<TPTask, DataType, std::shared_ptr<ThreadInfo> > factory;
+	ThreadPool thread_pool(1);
+
+	// AddTasksToFactory(factory);
+	// factory.Add(READ, NBDRead::Create);
+	// factory.Add(WRITE, NBDWrite::Create);
+	// factory.Add(FLUSH, NBDFlush::Create);
+	// factory.Add(TRIM, NBDTrim::Create);
+	factory.Add(BAD_REQUEST, NBDBadRequest::Create);
 
 	monitor->Add(STDIN_FILENO, Epoll::READ_FD);
 	monitor->Add(driver->GetReqFd(), Epoll::READ_FD);
 
-	while (RUN == s_run_loop)
+	// std::unique_ptr<ThreadInfo> ttt(new ThreadInfo(
+	// 	driver, storage, std::move(data)));
+	//
+	// thread_pool.AddTask(factory.Create(BAD_REQUEST, std::move(ttt)));
+
+	// driver->Disconnect();
+
+	while (1)
+	// while (RUN == s_run_loop)
 	{
 		monitor->Wait();
 
@@ -180,14 +218,21 @@ static void RunGreenCloude(std::shared_ptr<DriverProxy> driver,
 		else
 		{
 			data = driver->ReceiveRequest();
-			if (data->m_type == DISCONNECT)
+			if (DISCONNECT == data->m_type)
 			{
 				driver->Disconnect();
 				goto exit_safe;
 			}
+			std::shared_ptr<ThreadInfo> ttt(new
+				ThreadInfo(driver, storage, std::move(data)));
 
-			std::thread(ThreadFunc, driver, storage, std::move(data)).detach();
+			thread_pool.AddTask(factory.Create(BAD_REQUEST, ttt));
+			// thread_pool.AddTask(factory.Create(data->m_type, std::move(ttt)));
+
 		}
+		driver->Disconnect();
+		goto exit_safe;
+
 	}
 
 	exit_safe:

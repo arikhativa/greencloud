@@ -33,6 +33,7 @@ public:
     void Wait();
     void TryWait();
     void TimedWait(size_t time);
+    int GetVal();
 
 private:
     // No cctor, copy=

@@ -24,6 +24,7 @@
 #define __HRD11_FACTORY_HPP__
 
 #include <functional>       // std::function
+#include <utility>          // std::forward
 #include <unordered_map>    // std::unordered_map
 #include <memory>           // std::unique_ptr
 #include <stdexcept>        // std::logic_error
@@ -104,6 +105,7 @@ Factory<Base, Key, Args>::Create(const Key& key, Args args)
     }
 
     return std::unique_ptr<Base>(iter->second(args));
+    // return std::unique_ptr<Base>(iter->second(std::forward<Args>(args)));
 }
 
 }   // end namespace hrd11

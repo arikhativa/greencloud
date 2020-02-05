@@ -2,9 +2,11 @@
 #ifndef __HRD11_TPTASK_HPP__
 #define __HRD11_TPTASK_HPP__
 
+#include <memory>       // std::unique_ptr
+
+
 namespace hrd11
 {
-
 // interface only. User must inherit and define functions specification per TPTask-class
 //move TPTask to separate hpp file
 class TPTask
@@ -35,6 +37,11 @@ private:
 	TaskPriority m_priority;
 };
 
+
 }	// end namespace hrd11
+
+template<>
+bool std::operator< (const std::unique_ptr<hrd11::TPTask>& task_a,
+    const std::unique_ptr<hrd11::TPTask>& task_b);
 
 #endif // __HRD11_TPTASK_HPP__

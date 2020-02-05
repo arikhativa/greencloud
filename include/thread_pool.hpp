@@ -40,7 +40,6 @@ public:
 
 private:
     void ThreadFunc(); // Pop and execute from WPQ.
-    void PushSysTask(std::unique_ptr<TPTask> task);
 
     Semaphore m_sem;
 	WPriorityQueue<std::unique_ptr<TPTask>> m_task_queue; //consider to add comparer function

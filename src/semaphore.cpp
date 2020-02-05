@@ -77,4 +77,16 @@ void Semaphore::TimedWait(size_t time)
     }
 }
 
+int Semaphore::GetVal()
+{
+    int ret = 0;
+
+    if (sem_getvalue(&m_sem, &ret))
+    {
+        throw SemError("Semaphore::GetVal() -  sem_getvalue() fail", errno);
+    }
+
+    return ret;
+}
+
 } // namespace hrd11

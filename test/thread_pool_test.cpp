@@ -1,6 +1,7 @@
 
 
 #include <unistd.h>
+#include <mutex>
 
 #include "thread_pool.hpp"
 #include "tptask.hpp"
@@ -9,6 +10,8 @@
 
 using namespace hrd11;
 
+
+std::mutex g_mutex;
 
 static int g_end = 1;
 
@@ -21,15 +24,37 @@ struct PrintA : public TPTask
 
     void Execute() override
     {
+        std::lock_guard<std::mutex> lock(g_mutex);
 
-        write(1, "O\n", 2);
+        write(1, "a\n", 2);
+    }
+};
+struct PrintB : public TPTask
+{
+    PrintB() : TPTask(TPTask::TaskPriority::HIGH)
+    {}
+    ~PrintB()
+    {}
+
+    void Execute() override
+    {
+        std::lock_guard<std::mutex> lock(g_mutex);
+
+        write(1, "b\n", 2);
     }
 };
 
 struct EndMain : public TPTask
 {
+    EndMain() : TPTask(TPTask::TaskPriority::LOW)
+    {}
+    ~EndMain()
+    {}
+
     void Execute() override
     {
+        std::lock_guard<std::mutex> lock(g_mutex);
+
         write(1, "E\n", 2);
         g_end = 0;
     }
@@ -38,23 +63,19 @@ struct EndMain : public TPTask
 
 int main()
 {
-    ThreadPool tp(1);
+    ThreadPool tp(4);
 
     tp.Suspend();
-    tp.AddTask(std::unique_ptr<TPTask>(new PrintA));
-    tp.AddTask(std::unique_ptr<TPTask>(new PrintA));
-    tp.AddTask(std::unique_ptr<TPTask>(new PrintA));
-    tp.AddTask(std::unique_ptr<TPTask>(new PrintA));
-    tp.AddTask(std::unique_ptr<TPTask>(new PrintA));
-    tp.AddTask(std::unique_ptr<TPTask>(new PrintA));
-
 
     tp.AddTask(std::unique_ptr<TPTask>(new PrintA));
     tp.AddTask(std::unique_ptr<TPTask>(new PrintA));
     tp.AddTask(std::unique_ptr<TPTask>(new PrintA));
     tp.AddTask(std::unique_ptr<TPTask>(new PrintA));
-    tp.AddTask(std::unique_ptr<TPTask>(new PrintA));
 
+    tp.AddTask(std::unique_ptr<TPTask>(new PrintB));
+    tp.AddTask(std::unique_ptr<TPTask>(new PrintB));
+    tp.AddTask(std::unique_ptr<TPTask>(new PrintB));
+    tp.AddTask(std::unique_ptr<TPTask>(new PrintB));
 
 
 size_t i = 400000000;
@@ -62,10 +83,14 @@ size_t i = 400000000;
     {
         --i;
     }
-    write(1, "W\n", 2);
 
+{
+    std::lock_guard<std::mutex> lock(g_mutex);
 
+    write(1, "R\n", 2);
     tp.Resume();
+}
+
     tp.AddTask(std::unique_ptr<TPTask>(new EndMain));
 
     while (g_end)
