@@ -295,10 +295,13 @@ static void WriteAll(int fd, char* buff, unsigned int count)
 
     while (count > 0)
     {
+		errno = 0;
         bytes_written = write(fd, buff, count);
 
         if (0 > bytes_written)
         {
+			printf("-- errno is %s\n", strerror(errno));
+			printf("-- fd is %d\n", fd);
 			const char* msg = "WriteAll() fail to write() to fd";
 
 			s_log->Write(LOG_ERROR, msg, __FILE__, __LINE__);

@@ -40,6 +40,8 @@ static void SetSigMask();
 static void MainThreadSetSignals();
 static void RunGreenCloude(std::shared_ptr<DriverProxy> driver,
 							std::shared_ptr<Storage> storage);
+static void AddTasksToFactory(Factory<TPTask, DataType,
+								std::unique_ptr<ThreadInfo> >& factory);
 
 enum ExitStatus
 {
@@ -48,14 +50,6 @@ enum ExitStatus
 	EXCEPTION = 2
 };
 
-enum RunLoop
-{
-	RUN = 0,
-	STOP
-};
-
-
-
 // Global ---------------------------------------------------------------------
 static Logger* s_log = Handleton<Logger>::GetInstance(LOG_PATH, LOG_LVL);
 static const char* STORAGE_FILE_PATH = "./storage.ignore";
@@ -63,11 +57,9 @@ static const unsigned int CONVTER_TO_MB = 1024 * 1024;
 static const unsigned int MAX_EVENTS_TO_WAKE = 1;
 static const unsigned int BUFF_SIZE = 100;
 static const unsigned int END_PROG = 1;
-static int s_run_loop = RUN;
 
 
 // Main -----------------------------------------------------------------------
-
 int main(int ac, char* av[])
 {
 	std::shared_ptr<DriverProxy> driver;
@@ -128,82 +120,24 @@ int main(int ac, char* av[])
 	return SUCCESS;
 }
 
+
 // Static funcs ---------------------------------------------------------------
-
-// static void ThreadFunc(std::shared_ptr<DriverProxy> driver,
-// 							std::shared_ptr<Storage> storage,
-// 							std::unique_ptr<DriverData> data)
-// {
-// 	switch (data->m_type)
-// 	{
-// 		case READ:
-// 		{
-// 			data = storage->Read(std::move(data));
-//
-// 			break ;
-// 		}
-// 		case WRITE:
-// 		{
-// 			data = storage->Write(std::move(data));
-// 			break ;
-// 		}
-// 		case DISCONNECT:
-// 		{
-//
-// 			LOG(LOG_DEBUG, "ThreadFunc() case DISCONNECT:");
-// 			goto exit_safe;
-//
-// 			break ;
-// 		}
-// 		default:
-// 		break ;
-// 	}
-//
-// 	driver->SendReply(std::move(data));
-//
-// 	exit_safe:
-//
-// 	return ;
-// }
-//
-// static void AddTasksToFactory(Factory<TPTask, DataType,
-// 								std::unique_ptr<ThreadInfo> >& factory)
-// {
-// 	factory.Add(READ, NBDRead::Create);
-// 	factory.Add(WRITE, NBDWrite::Create);
-// 	factory.Add(FLUSH, NBDFlush::Create);
-// 	factory.Add(TRIM, NBDTrim::Create);
-// 	factory.Add(BAD_REQUEST, NBDBadRequest::Create);
-// }
-
 
 static void RunGreenCloude(std::shared_ptr<DriverProxy> driver,
 							std::shared_ptr<Storage> storage)
 {
 	std::unique_ptr<Monitor> monitor(new Epoll(MAX_EVENTS_TO_WAKE));
 	std::unique_ptr<DriverData> data;
-	Factory<TPTask, DataType, std::shared_ptr<ThreadInfo> > factory;
-	ThreadPool thread_pool(1);
+	std::unique_ptr<ThreadInfo> current_info;
+	Factory<TPTask, DataType, std::unique_ptr<ThreadInfo> > factory;
+	ThreadPool thread_pool;
 
-	// AddTasksToFactory(factory);
-	// factory.Add(READ, NBDRead::Create);
-	// factory.Add(WRITE, NBDWrite::Create);
-	// factory.Add(FLUSH, NBDFlush::Create);
-	// factory.Add(TRIM, NBDTrim::Create);
-	factory.Add(BAD_REQUEST, NBDBadRequest::Create);
+	AddTasksToFactory(factory);
 
 	monitor->Add(STDIN_FILENO, Epoll::READ_FD);
 	monitor->Add(driver->GetReqFd(), Epoll::READ_FD);
 
-	// std::unique_ptr<ThreadInfo> ttt(new ThreadInfo(
-	// 	driver, storage, std::move(data)));
-	//
-	// thread_pool.AddTask(factory.Create(BAD_REQUEST, std::move(ttt)));
-
-	// driver->Disconnect();
-
 	while (1)
-	// while (RUN == s_run_loop)
 	{
 		monitor->Wait();
 
@@ -218,29 +152,36 @@ static void RunGreenCloude(std::shared_ptr<DriverProxy> driver,
 		else
 		{
 			data = driver->ReceiveRequest();
-			if (DISCONNECT == data->m_type)
+
+			DataType current_type = data->m_type;
+			if (DISCONNECT == current_type)
 			{
 				driver->Disconnect();
 				goto exit_safe;
 			}
-			std::shared_ptr<ThreadInfo> ttt(new
-				ThreadInfo(driver, storage, std::move(data)));
 
-			thread_pool.AddTask(factory.Create(BAD_REQUEST, ttt));
-			// thread_pool.AddTask(factory.Create(data->m_type, std::move(ttt)));
+			current_info.reset(
+							new ThreadInfo(driver, storage, std::move(data)));
 
+			thread_pool.AddTask(
+						factory.Create(current_type, std::move(current_info)));
 		}
-		driver->Disconnect();
-		goto exit_safe;
-
 	}
 
 	exit_safe:
 
 	return ;
-
 }
 
+static void AddTasksToFactory(Factory<TPTask, DataType,
+								std::unique_ptr<ThreadInfo> >& factory)
+{
+	factory.Add(READ, NBDRead::Create);
+	factory.Add(WRITE, NBDWrite::Create);
+	factory.Add(FLUSH, NBDFlush::Create);
+	factory.Add(TRIM, NBDTrim::Create);
+	factory.Add(BAD_REQUEST, NBDBadRequest::Create);
+}
 
 static void PrintUsege()
 {

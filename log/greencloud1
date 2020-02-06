@@ -1,18 +1,1 @@
 Data & Time                ID      Source File                  Line  Type   ThreadId         Massage
-Wed Feb  5 13:00:04 2020   8091    greencloud.0.2.cpp           350   Debug  67391936  setting main thread signls
-Wed Feb  5 13:00:04 2020   8091    greencloud.0.2.cpp           361   Info   67391936  main thread signls are set
-Wed Feb  5 13:00:15 2020   8091    nbd_driver_proxy.cpp         81    Info   67391936  NBDDriverProxy() ctor is done
-Wed Feb  5 13:00:15 2020   8091    nbd_driver_proxy.cpp         222   Info   112781056  ThreadFuncSetNBD() begin
-Wed Feb  5 13:00:15 2020   8091    nbd_driver_proxy.cpp         240   Error  112781056  ThreadFuncSetNBD() thread fail to setup nbd-- IoctlError:
--- fd		6
--- macro	43776
--- flags	5
-
-ebug  67391936  NBDBadRequest()
-Wed Feb  5 12:59:43 2020   8070    nbd_driver_proxy.cpp         195   Debug  67391936  NBDDriverProxy::Disconnect() begin
-Wed Feb  5 12:59:43 2020   8070    nbd_driver_proxy.cpp         203   Debug  67391936  NBDDriverProxy::Disconnect() joining thread
-Wed Feb  5 12:59:43 2020   8070    nbd_tasks.hpp                153   Debug  121173760  NBDBadRequest::Execute()
-Wed Feb  5 12:59:43 2020   8070    nbd_driver_proxy.cpp         246   Info   112781056  ThreadFuncSetNBD() done
-Wed Feb  5 12:59:43 2020   8070    nbd_driver_proxy.cpp         205   Debug  67391936  NBDDriverProxy::Disconnect() joined thread
-Wed Feb  5 13:00:15 2020   8070    nbd_driver_proxy.cpp         210   Info   67391936  NBDDriverProxy::Disconnect() done
-Wed Feb  5 13:00:15 2020   8070    nbd_driver_proxy.cpp         92    Info   67391936  NBDDriverProxy() dtor is done

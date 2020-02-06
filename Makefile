@@ -69,8 +69,12 @@ fac:
 
 pq:
 	$(CC) $(LFLAGS) ./test/wpq.cpp ./src/semaphore.cpp -o $@.out -I $(HED_DIR)
+
 tp: $(EXE)
 	$(CC) $(LFLAGS) ./test/thread_pool_test.cpp ./obj/*.o -o $@.out -lglobals -I $(HED_DIR)
+
+dis: $(EXE)
+	$(CC) $(LFLAGS) ./test/dispatcher_callback_test.cpp ./obj/*.o -o $@.out -lglobals -I $(HED_DIR)
 
 
 clean:

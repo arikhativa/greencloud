@@ -104,8 +104,7 @@ Factory<Base, Key, Args>::Create(const Key& key, Args args)
         throw Badkey<Key>("Factory<>::Create() - invalid key", key);
     }
 
-    return std::unique_ptr<Base>(iter->second(args));
-    // return std::unique_ptr<Base>(iter->second(std::forward<Args>(args)));
+    return std::unique_ptr<Base>(iter->second(std::forward<Args>(args)));
 }
 
 }   // end namespace hrd11

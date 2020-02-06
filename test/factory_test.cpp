@@ -1,5 +1,6 @@
 
 
+#include <memory>
 #include "factory.hpp"
 
 using namespace hrd11;
