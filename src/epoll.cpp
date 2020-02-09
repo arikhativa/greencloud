@@ -76,6 +76,21 @@ int Epoll::Wait()
     return ret;
 }
 
+int Epoll::WaitTimeOut(int timeout)
+{
+    int ret = 0;
+
+    errno = 0;
+
+    ret = epoll_wait(m_epoll_fd, m_events.data(), m_max_events, timeout);
+    if (-1 == ret)
+    {
+        throw EpollError("Epoll::WaitTimeOut() - epoll_wait()" ,errno);
+    }
+
+    return ret;
+}
+
 int Epoll::operator[](size_t index)
 {
     return m_events[index].data.fd;

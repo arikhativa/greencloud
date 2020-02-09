@@ -44,7 +44,7 @@ all: $(EXE)
 #$(LIB): $(OBJ)
 #	ar rc $@ $(addprefix $(OBJ_DIR)/,$(OBJ))
 
-$(EXE): $(NAME_SRC) $(OBJ) $(GLOBAL_LIB)
+$(EXE): $(NAME_SRC) $(OBJ) $(SRC) $(GLOBAL_LIB)
 	$(CC) $(LFLAGS) $< $(OBJS) -o $@ $(DLFLAGS) -I $(HED_DIR)
 
 $(GLOBAL_LIB): $(GLOBAL_SRC)

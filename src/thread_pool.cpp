@@ -1,5 +1,6 @@
 
 // C++ include ----------------------------------------------------------------
+#include <chrono>       		// std::chrono
 #include <thread>       		// std::thread
 #include <memory>				// std::unique_ptr
 #include <mutex>                // std::mutex
@@ -11,6 +12,17 @@
 #include "thread_pool.hpp"
 #include "tptask.hpp"
 #include "tp_sys_task.hpp"
+
+/*
+	TODO:
+	general -
+		- del unistd
+		- Stop() with time_out
+		- SetSize()
+*/
+
+#include <unistd.h>
+
 
 namespace hrd11
 {
@@ -24,12 +36,6 @@ enum ThreadStatus
 	DONT_RUN = 0,
 	RUN
 };
-
-/* TODO:
-general -
-	- Only cotr, dtor, AddTask and Stop work.
-	write the rest
-*/
 
 
 // Public Members -------------------------------------------------------------
@@ -53,7 +59,6 @@ ThreadPool::~ThreadPool()
 	}
 }
 
-// according to Factory::Create
 void ThreadPool::AddTask(std::unique_ptr<TPTask> new_task)
 {
 	m_task_queue.Push(std::move(new_task));
@@ -81,17 +86,29 @@ void ThreadPool::Stop(std::chrono::nanoseconds time_out)
 
 void ThreadPool::Suspend() //will not loose data of current running TPTasks
 {
-	for (size_t i = 0; i < m_threads.size(); ++i)
+	size_t thread_num = m_threads.size();
+
+	for (size_t i = 0; i < thread_num; ++i)
 	{
 		AddTask(std::unique_ptr<TPTask>(new TPSuspend));
+	}
+	for (size_t i = 0; i < thread_num; ++i)
+	{
+		m_main_sem.Wait();
 	}
 }
 
 void ThreadPool::Resume()
 {
-	for (size_t i = 0; i < m_threads.size(); ++i)
+	size_t thread_num = m_threads.size();
+
+	for (size_t i = 0; i < thread_num; ++i)
 	{
-		m_sem.Post();
+		m_thread_sem.Post();
+	}
+	for (size_t i = 0; i < thread_num; ++i)
+	{
+		m_main_sem.Wait();
 	}
 }
 
@@ -124,8 +141,12 @@ void ThreadPool::ThreadFunc()
 					break ;
 
 				case ThreadMsg::MsgType::SUSPEND:
-					m_sem.Wait();
+				{
+					m_main_sem.Post();
+					m_thread_sem.Wait();
+					m_main_sem.Post();
 					break ;
+				}
 				default:
 				break ;
 			}

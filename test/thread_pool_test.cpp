@@ -72,26 +72,21 @@ int main()
     tp.AddTask(std::unique_ptr<TPTask>(new PrintA));
     tp.AddTask(std::unique_ptr<TPTask>(new PrintA));
 
-    tp.AddTask(std::unique_ptr<TPTask>(new PrintB));
-    tp.AddTask(std::unique_ptr<TPTask>(new PrintB));
-    tp.AddTask(std::unique_ptr<TPTask>(new PrintB));
-    tp.AddTask(std::unique_ptr<TPTask>(new PrintB));
-
-
-size_t i = 400000000;
-    while (i)
-    {
-        --i;
-    }
-
-{
-    std::lock_guard<std::mutex> lock(g_mutex);
-
-    write(1, "R\n", 2);
     tp.Resume();
-}
+    // write(1, "h\n", 2);
+    tp.Suspend();
+
+    tp.AddTask(std::unique_ptr<TPTask>(new PrintB));
+    tp.AddTask(std::unique_ptr<TPTask>(new PrintB));
+    tp.AddTask(std::unique_ptr<TPTask>(new PrintB));
+    tp.AddTask(std::unique_ptr<TPTask>(new PrintB));
+
+    tp.Resume();
+    tp.Suspend();
 
     tp.AddTask(std::unique_ptr<TPTask>(new EndMain));
+
+    tp.Resume();
 
     while (g_end)
     {

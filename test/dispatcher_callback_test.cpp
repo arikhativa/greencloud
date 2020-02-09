@@ -1,7 +1,9 @@
 
 #include <stdio.h>
+#include <unistd.h>
 
 #include "dispatcher_callback.hpp"
+#include "plug_and_play.hpp"
 
 using namespace hrd11;
 
@@ -68,9 +70,8 @@ struct Ac
 };
 
 
-int main()
+void Test1()
 {
-
     Ac ac;
     Ac ac1;
     Ac ac2;
@@ -92,6 +93,21 @@ int main()
     // threm.SetTemp(3);
     // ac3.Disconnect();
     // threm.SetTemp(10);
+}
+
+void Test2()
+{
+    DirMonitor(".");
+
+    for (size_t i =0; i < 10000000; ++i)
+    {
+    }
+}
+
+int main()
+{
+
+    Test2();
 
     return 0;
 }

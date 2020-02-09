@@ -27,6 +27,7 @@ public:
     virtual void Add(int fd, unsigned int event_type) = 0;
     virtual void Remove(int fd) = 0;
     virtual int Wait() = 0;
+    virtual int WaitTimeOut(int timeout) = 0;
     virtual int operator[](size_t index) = 0;
 
 private:

@@ -12,19 +12,6 @@
     Ver 1.0
 */
 
-
-
-
-
-
-
-#include <stdio.h>
-
-
-
-
-
-
 #ifndef __DISPATHCER_CALLBACK_HPP_
 #define __DISPATHCER_CALLBACK_HPP_
 

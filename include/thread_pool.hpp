@@ -41,7 +41,8 @@ public:
 private:
     void ThreadFunc(); // Pop and execute from WPQ.
 
-    Semaphore m_sem;
+    Semaphore m_thread_sem;
+    Semaphore m_main_sem;
 	WPriorityQueue<std::unique_ptr<TPTask>> m_task_queue; //consider to add comparer function
     std::vector<std::thread> m_threads;
 };

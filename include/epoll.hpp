@@ -38,6 +38,8 @@ public:
     virtual void Add(int fd, unsigned int event_type) override;
     virtual void Remove(int fd) override;
     virtual int Wait() override;
+    virtual int WaitTimeOut(int timeout) override;
+
     virtual int operator[](size_t index) override;
 
 private:
