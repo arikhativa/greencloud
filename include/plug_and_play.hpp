@@ -5,7 +5,9 @@
     It enable to add tasks to the DriverProxy and create it by factory.
     The task went directly into the thread-pool priority-queue and will execute.
 
-    Requierment: Implement task by shared object and insert to configuration directory.
+    Requierment:    Implement task by shared object and insert to configuration directory.
+                    Do not drag and drop into the diractory!
+                    Use copy and paste
 
     Date: 5.2.20
     Ver 1.0
@@ -24,6 +26,14 @@ namespace hrd11
 
 class DirMonitor
 {
+    enum ThreadStatus
+    {
+        RUNING = 0,
+        INIT,
+        ERROR,
+        EXIT_PROG
+    };
+
 public:
     explicit DirMonitor(const std::string& dir_path);
     ~DirMonitor();
@@ -37,11 +47,13 @@ public:
     DirMonitor& operator=(DirMonitor&&) = delete;
 
     Dispatcher<std::string>* GetDispatcher();
+    ThreadStatus SetThreadStatus();
+    void SetThreadStatus(DirMonitor::ThreadStatus stt);
 
 private:
     void Monitor(const std::string& dir_path);
 
-    int m_dir_fd;
+    ThreadStatus m_exit;
     Dispatcher<std::string> m_dispatcher;
     std::thread m_monitor;
 };

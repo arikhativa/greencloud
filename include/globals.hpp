@@ -10,4 +10,7 @@
     #define LOG_PATH "./log/greencloud"
 #endif
 
+#define FACTORY Factory<TPTask, DataType,std::unique_ptr<ThreadInfo>>
+
+
 #endif // __HRD11_GLOBALS_HPP__

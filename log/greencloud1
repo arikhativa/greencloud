@@ -1,1 +1,11 @@
 Data & Time                ID      Source File                  Line  Type   ThreadId         Massage
+Sun Feb  9 18:40:47 2020   7126    greencloud.0.2.cpp           290   Debug  140478217516864  setting main thread signls
+Sun Feb  9 18:40:47 2020   7126    greencloud.0.2.cpp           301   Info   140478217516864  main thread signls are set
+Sun Feb  9 18:40:47 2020   7126    nbd_driver_proxy.cpp         81    Info   140478217516864  NBDDriverProxy() ctor is done
+Sun Feb  9 18:40:47 2020   7126    nbd_driver_proxy.cpp         222   Info   140478195091200  ThreadFuncSetNBD() begin
+Sun Feb  9 18:45:30 2020   7126    nbd_driver_proxy.cpp         195   Debug  140478217516864  NBDDriverProxy::Disconnect() begin
+Sun Feb  9 18:45:30 2020   7126    nbd_driver_proxy.cpp         203   Debug  140478217516864  NBDDriverProxy::Disconnect() joining thread
+Sun Feb  9 18:45:30 2020   7126    nbd_driver_proxy.cpp         246   Info   140478195091200  ThreadFuncSetNBD() done
+Sun Feb  9 18:45:30 2020   7126    nbd_driver_proxy.cpp         205   Debug  140478217516864  NBDDriverProxy::Disconnect() joined thread
+Sun Feb  9 18:45:30 2020   7126    nbd_driver_proxy.cpp         210   Info   140478217516864  NBDDriverProxy::Disconnect() done
+Sun Feb  9 18:45:30 2020   7126    nbd_driver_proxy.cpp         92    Info   140478217516864  NBDDriverProxy() dtor is done

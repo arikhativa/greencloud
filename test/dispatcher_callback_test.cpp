@@ -97,11 +97,17 @@ void Test1()
 
 void Test2()
 {
-    DirMonitor(".");
+    DirMonitor subject("./plugins");
+    DL_Loader observer(subject.GetDispatcher());
 
-    for (size_t i =0; i < 10000000; ++i)
+    while (1)
     {
+        
     }
+
+
+
+
 }
 
 int main()

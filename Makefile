@@ -25,7 +25,7 @@ TESTS := $(wildcard $(TEST_DIR)/*.cpp)
 CC = g++
 CFLAGS = -c -std=c++11 -pedantic-errors -Wall -Wextra -g
 LFLAGS = -std=c++11 -pedantic-errors -Wall -Wextra -g -pthread
-DLFLAGS = -lglobals
+DLFLAGS = -lglobals -ldl
 
 .SECONDARY: $(wildcard *.o)
 .SUFFIXES:
@@ -74,7 +74,7 @@ tp: $(EXE)
 	$(CC) $(LFLAGS) ./test/thread_pool_test.cpp ./obj/*.o -o $@.out -lglobals -I $(HED_DIR)
 
 dis: $(EXE)
-	$(CC) $(LFLAGS) ./test/dispatcher_callback_test.cpp ./obj/*.o -o $@.out -lglobals -I $(HED_DIR)
+	$(CC) $(LFLAGS) ./test/dispatcher_callback_test.cpp ./obj/*.o -o $@.out $(DLFLAGS) -I $(HED_DIR)
 
 
 clean:

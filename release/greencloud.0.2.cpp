@@ -40,8 +40,7 @@ static void SetSigMask();
 static void MainThreadSetSignals();
 static void RunGreenCloude(std::shared_ptr<DriverProxy> driver,
 							std::shared_ptr<Storage> storage);
-static void AddTasksToFactory(Factory<TPTask, DataType,
-								std::unique_ptr<ThreadInfo> >& factory);
+static void AddTasksToFactory(FACTORY* factory);
 
 enum ExitStatus
 {
@@ -129,8 +128,9 @@ static void RunGreenCloude(std::shared_ptr<DriverProxy> driver,
 	std::unique_ptr<Monitor> monitor(new Epoll(MAX_EVENTS_TO_WAKE));
 	std::unique_ptr<DriverData> data;
 	std::unique_ptr<ThreadInfo> current_info;
-	Factory<TPTask, DataType, std::unique_ptr<ThreadInfo> > factory;
 	ThreadPool thread_pool;
+
+	FACTORY* factory = Handleton<FACTORY>::GetInstance();
 
 	AddTasksToFactory(factory);
 
@@ -164,7 +164,7 @@ static void RunGreenCloude(std::shared_ptr<DriverProxy> driver,
 							new ThreadInfo(driver, storage, std::move(data)));
 
 			thread_pool.AddTask(
-						factory.Create(current_type, std::move(current_info)));
+						factory->Create(current_type, std::move(current_info)));
 		}
 	}
 
@@ -173,14 +173,13 @@ static void RunGreenCloude(std::shared_ptr<DriverProxy> driver,
 	return ;
 }
 
-static void AddTasksToFactory(Factory<TPTask, DataType,
-								std::unique_ptr<ThreadInfo> >& factory)
+static void AddTasksToFactory(FACTORY* factory)
 {
-	factory.Add(READ, NBDRead::Create);
-	factory.Add(WRITE, NBDWrite::Create);
-	factory.Add(FLUSH, NBDFlush::Create);
-	factory.Add(TRIM, NBDTrim::Create);
-	factory.Add(BAD_REQUEST, NBDBadRequest::Create);
+	factory->Add(READ, NBDRead::Create);
+	factory->Add(WRITE, NBDWrite::Create);
+	factory->Add(FLUSH, NBDFlush::Create);
+	factory->Add(TRIM, NBDTrim::Create);
+	factory->Add(BAD_REQUEST, NBDBadRequest::Create);
 }
 
 static void PrintUsege()
