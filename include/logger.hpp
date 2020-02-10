@@ -57,7 +57,6 @@ private:
 
     Logger(const std::string& path_and_filename, Loglvl lvl,
             int flag = OVERRIDE_FILE);
-
     std::mutex m_mutex;
     std::ofstream m_file;
     Loglvl m_lvl;
@@ -71,5 +70,6 @@ struct LoggerBadOpen : public std::runtime_error
 };
 
 }   // end namespace hrd11
+
 
 #endif // __HRD11_LOGGER_HPP__

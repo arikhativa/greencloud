@@ -9,18 +9,24 @@
 #include "globals.hpp"
 
 
+// #include "base.hpp"
+
+
 namespace hrd11
 {
+
+
     INIT_HANDLETON(Logger)
+
     INIT_HANDLETON(FACTORY)
 
-    // template<>
-    // std::mutex Handleton<FFF>::s_mutex{};
-    // template<>
-    // std::atomic<FFF*> Handleton<FFF>::s_instance{nullptr};
-    // template<>
-    // std::unique_ptr<FFF> Handleton<FFF>::s_ptr{nullptr};
+    // INIT_HANDLETON(Base)
 
 
+    // static void InitSharedObjet() __attribute__((constructor));
+    // void InitSharedObjet()
+    // {
+    //     Handleton<Logger>::GetInstance(LOG_PATH, LOG_LVL);
+    // }
 
 }   // end namespace hrd11

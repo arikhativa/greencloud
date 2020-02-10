@@ -36,7 +36,7 @@ public:
         return std::unique_ptr<NBDRead>(new NBDRead(std::move(info)));
     }
 
-private:
+// private:
     NBDRead(std::unique_ptr<ThreadInfo> info) : m_info(std::move(info))
     {}
 

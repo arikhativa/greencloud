@@ -63,7 +63,11 @@ class Factory
 public:
 
     Factory() = default;
-    ~Factory() = default;
+    // ~Factory() = default;
+    ~Factory()
+    {
+        printf("\n\nfactory dtor\n\n");
+    }
 
     Factory(const Factory& other) = delete;
     Factory& operator = (const Factory& other) = delete;
@@ -109,7 +113,7 @@ Factory<Base, Key, Args>::Create(const Key& key, Args args)
         throw Badkey<Key>("Factory<>::Create() - invalid key", key);
     }
 
-    return std::unique_ptr<Base>(iter->second(std::forward<Args>(args)));
+    return iter->second(std::forward<Args>(args));
 }
 
 }   // end namespace hrd11

@@ -20,7 +20,7 @@ public:
         SYSTEM  // this priority is only for internl function. do not use it
     };
 
-	TPTask(TaskPriority priority = MEDIUM); // priority is enum - not possible to implicit convert. No need for explicit.
+	explicit TPTask(TaskPriority priority = MEDIUM);
 	virtual ~TPTask() = default;
 
 	TPTask(const TPTask& other) = default;

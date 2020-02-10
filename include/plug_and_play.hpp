@@ -18,6 +18,7 @@
 
 #include <string>       // std::string
 #include <thread>       // std::thread
+#include <vector>       // std::vector
 
 #include "dispatcher_callback.hpp"
 
@@ -31,7 +32,8 @@ class DirMonitor
         RUNING = 0,
         INIT,
         ERROR,
-        EXIT_PROG
+        END_THREAD,
+        SUCCESS
     };
 
 public:
@@ -47,13 +49,13 @@ public:
     DirMonitor& operator=(DirMonitor&&) = delete;
 
     Dispatcher<std::string>* GetDispatcher();
-    ThreadStatus SetThreadStatus();
+    ThreadStatus GetThreadStatus();
     void SetThreadStatus(DirMonitor::ThreadStatus stt);
 
 private:
     void Monitor(const std::string& dir_path);
 
-    ThreadStatus m_exit;
+    ThreadStatus m_thread_stt;
     Dispatcher<std::string> m_dispatcher;
     std::thread m_monitor;
 };
@@ -63,7 +65,7 @@ class DL_Loader
 {
 public:
     explicit DL_Loader(Dispatcher<std::string>* dispatcher);
-    ~DL_Loader() = default;
+    ~DL_Loader();
 
     //uncopiable
     DL_Loader(const DL_Loader&) = delete;
@@ -75,6 +77,7 @@ public:
     void LoadLib(const std::string& path);
 
 private:
+    std::vector<void*> m_fds;
     CallBack<std::string,DL_Loader> m_callback;
 };
 

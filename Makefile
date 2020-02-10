@@ -1,10 +1,11 @@
 
-NAME := greencloud.0.2
+NAME := greencloud.0.3
 
 SRC_DIR = src
 OBJ_DIR = obj
 HED_DIR = include
 LIB_DIR = lib
+SO_DIR = /usr/lib
 RELEASE_DIR = release
 TEST_DIR = test
 
@@ -18,7 +19,7 @@ SRC := $(wildcard $(SRC_DIR)/*.cpp)
 EXE := $(NAME).out
 NAME_SRC := $(NAME).cpp
 OBJ := $(notdir $(SRC:.cpp=.o))
-LIB := $(LIB_DIR)/lib.a
+LIB := libgreencloud.so
 OBJS :=$(addprefix $(OBJ_DIR)/,$(OBJ))
 TESTS := $(wildcard $(TEST_DIR)/*.cpp)
 
@@ -34,18 +35,20 @@ DLFLAGS = -lglobals -ldl
 vpath %.cpp $(SRC_DIR)
 vpath %.o $(OBJ_DIR)
 vpath %.hpp $(HED_DIR)
+vpath %.so $(SO_DIR)
 
 all: $(EXE)
 
 %.o: %.cpp %.hpp
-	$(CC) $(CFLAGS) $< -I $(HED_DIR)
+	$(CC) $(CFLAGS) -fPIC $< -I $(HED_DIR)
 	mv *.o $(OBJ_DIR)
 
-#$(LIB): $(OBJ)
-#	ar rc $@ $(addprefix $(OBJ_DIR)/,$(OBJ))
+$(LIB): $(OBJ) $(GLOBAL_LIB)
+	$(CC) $(LFLAGS) -shared $(OBJS) -o $@ $(DLFLAGS) -I $(HED_DIR)
+	sudo mv $@ /usr/lib/
 
-$(EXE): $(NAME_SRC) $(OBJ) $(SRC) $(GLOBAL_LIB)
-	$(CC) $(LFLAGS) $< $(OBJS) -o $@ $(DLFLAGS) -I $(HED_DIR)
+$(EXE): $(NAME_SRC) $(LIB) $(SRC)
+	$(CC) $(LFLAGS) -fPIC $< -o $@ $(DLFLAGS) -lgreencloud -I $(HED_DIR)
 
 $(GLOBAL_LIB): $(GLOBAL_SRC)
 	$(CC) $(CFLAGS) -fPIC $^ -I $(HED_DIR)
@@ -55,11 +58,11 @@ $(GLOBAL_LIB): $(GLOBAL_SRC)
 
 
 ton: $(GLOBAL_LIB)
-	$(CC) $(CFLAGS) -fPIC ./test/foo_lib.cpp -I $(HED_DIR)
+	$(CC) $(CFLAGS) -fPIC ./src/logger.cpp ./test/foo_lib.cpp -I $(HED_DIR)
 	mv *.o $(OBJ_DIR)
-	$(CC) $(LFLAGS) -shared ./obj/foo_lib.o -o libFoo.so -lglobals
+	$(CC) $(LFLAGS) -shared ./obj/foo_lib.o ./obj/logger.o -o libFoo.so -lglobals
 	sudo mv libFoo.so /usr/lib/
-	$(CC) $(LFLAGS) ./test/handleton_test.cpp -o $@.out -lglobals -ldl -I $(HED_DIR)
+	$(CC) $(LFLAGS) ./src/logger.cpp ./test/handleton_test.cpp -o $@.out -lglobals -ldl -I $(HED_DIR)
 
 logger:
 	$(CC) $(LFLAGS) ./src/logger.cpp ./test/logger_test.cpp -o $@.out -ldl -I $(HED_DIR)

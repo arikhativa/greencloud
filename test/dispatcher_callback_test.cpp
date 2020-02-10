@@ -100,13 +100,7 @@ void Test2()
     DirMonitor subject("./plugins");
     DL_Loader observer(subject.GetDispatcher());
 
-    while (1)
-    {
-        
-    }
-
-
-
+    sleep(7);
 
 }
 
