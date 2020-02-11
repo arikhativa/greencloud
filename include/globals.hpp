@@ -4,6 +4,13 @@
 
 #include "logger.hpp"
 
+
+// #include "task_args.hpp"
+// #include "request_engine.hpp"
+
+namespace hrd11
+{
+
 #ifndef LOG_LVL
     #define LOG_LVL LOG_DEBUG
 #endif
@@ -16,12 +23,26 @@
     #define PLUGINS_PATH "./plugins"
 #endif
 
-// extern "C"
-// {
-// extern hrd11::Logger* g_log;
-// }
+enum class FactoryKey
+{
+    READ = 0,
+    WRITE,
+    DISCONNECT,
+    FLUSH,
+    TRIM,
+    BAD_REQUEST,
+    IGNORE,
+    Q_EXIT
+};
 
-#define FACTORY Factory<TPTask, DataType, std::unique_ptr<ThreadInfo> >
+class TaskInfo;
 
+#define TEMPLATE FactoryKey , std::unique_ptr<TaskInfo>
+#define FACTORY Factory<TPTask, TEMPLATE >
+#define REQUEST_ENGINE RequestEngine<TEMPLATE>
+#define TIMEOUT 100
+
+
+}   //end namespace hrd11
 
 #endif // __HRD11_GLOBALS_HPP__

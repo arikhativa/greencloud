@@ -41,8 +41,11 @@ DirMonitor::~DirMonitor()
 
     SetThreadStatus(END_THREAD);
 
+    printf("~DirMonitor() joning\n");
+
     LOG(LOG_DEBUG, "~DirMonitor() - thread.join()");
     m_monitor.join();
+    printf("~DirMonitor() joned\n");
     LOG(LOG_DEBUG, "~DirMonitor() - end");
 }
 
@@ -96,7 +99,8 @@ void DirMonitor::Monitor(const std::string& dir_path)
     LOG(LOG_DEBUG, "Monitor() - begin to monitor directory");
     while (RUNING == GetThreadStatus())
     {
-        stt = epoll.WaitTimeOut(3000);  // timeout in every 3 sec
+        printf("Monitor(thread)\n");
+        stt = epoll.WaitTimeOut(TIMEOUT);
 
         if (0 < stt) // Epoll not timed out
         {
@@ -113,7 +117,7 @@ void DirMonitor::Monitor(const std::string& dir_path)
 
     close(m_dir_fd);
     SetThreadStatus(SUCCESS);
-    LOG(LOG_DEBUG, "Monitor() - exit");
+    LOG(LOG_DEBUG, "Monitor() - exit SUCCESS");
 }
 
 typedef void (*fp_t)(void);
@@ -129,28 +133,31 @@ DL_Loader::~DL_Loader()
 {
     LOG(LOG_DEBUG, "~DL_Loader()");
 
+    printf("~dl()\n");
     for (size_t i = 0; i < m_fds.size(); ++i)
     {
         if (dlclose(m_fds[i]))
         {
-            LOG(LOG_ERROR, "~DL_Loader() - dlclose() fail");
+            std::string msg("~DL_Loader() dlclose() fail - ");
+            msg += dlerror();
+            LOG(LOG_ERROR, msg);
         }
     }
-
+    printf("~dl() end\n");
 }
 
 void DL_Loader::LoadLib(const std::string& path)
 {
-    LOG(LOG_DEBUG, "LoadLib()");
+    LOG(LOG_DEBUG, "LoadLib() - begin");
 
     void *handle = 0;
 
     handle = dlopen(path.c_str(), RTLD_LAZY);
     if (!handle)
     {
-        printf("-- can't open - %s\n", path.c_str());
-        printf("%s\n", dlerror());
-        LOG(LOG_ERROR, "LoadLib() - dlopen() fail");
+        std::string msg("LoadLib() - dlopen() fail - ");
+        msg += dlerror();
+        LOG(LOG_ERROR, msg);
     }
 
     m_fds.push_back(handle);

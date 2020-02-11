@@ -3,9 +3,7 @@
 
 #include "handleton.hpp"
 #include "logger.hpp"
-#include "factory.hpp"
-#include "tptask.hpp"
-#include "nbd_tasks.hpp"
+
 #include "globals.hpp"
 
 
@@ -18,7 +16,7 @@ namespace hrd11
 
     INIT_HANDLETON(Logger)
 
-    INIT_HANDLETON(FACTORY)
+    // INIT_HANDLETON(FACTORY)
 
     // INIT_HANDLETON(Base)
 

@@ -63,11 +63,7 @@ class Factory
 public:
 
     Factory() = default;
-    // ~Factory() = default;
-    ~Factory()
-    {
-        printf("\n\nfactory dtor\n\n");
-    }
+    ~Factory() = default;
 
     Factory(const Factory& other) = delete;
     Factory& operator = (const Factory& other) = delete;

@@ -7,32 +7,55 @@
                     that will be used for creating tasks.
                     see CreatorFunc() in class RequestEngine.
 
+    Exceptions:     bad_alloc
+                    EpollError
+
     Ver 1.0
 */
 
-#ifndef __HRD11_RequestEngine_HPP__
-#define __HRD11_RequestEngine_HPP__
+#ifndef __HRD11_REQUEST_ENGINE_HPP__
+#define __HRD11_REQUEST_ENGINE_HPP__
 
+// C include ------------------------------------------------------------------
+
+// C++ include ----------------------------------------------------------------
 #include <functional>         // std:function
+#include <vector>             // std:vector
+#include <thread>             // std:thread
 #include <string>             // std:sting
 
-#include "tptask.hpp"
+// Local include --------------------------------------------------------------
+#include "epoll.hpp"
+#include "gateway.hpp"
+#include "retask.hpp"
+#include "thread_pool.hpp"
+#include "factory.hpp"
+#include "plug_and_play.hpp"
+#include "globals.hpp"
+#include "monitor.hpp"
 
 namespace hrd11
 {
 
-template <typename Key, typename Args>
-class GateWay;
+// Globals --------------------------------------------------------------------
+static const unsigned int MAX_EVENTS_TO_WAKE = 1;
 
-class RETask;
 
 template <typename Key, typename Args>
 class RequestEngine final
 {
 
 public:
+    enum class Status
+    {
+        INIT = 0,
+        RUN,
+        STOP
+    };
+
     // hardware_concurrncy comment
-    RequestEngine(size_t num_of_threads = std::thread::hardware_concurrncy, const std::string& plugings_dir_path);
+    RequestEngine(const std::string& plugings_dir_path,
+                size_t num_of_threads = std::thread::hardware_concurrency());
     ~RequestEngine();
 
     // unmcopyable
@@ -51,59 +74,83 @@ public:
     void Stop();
 
 private:
-    // added members
-
+    Status m_req_engine_stt;
+    std::unique_ptr<Monitor> m_fd_monitor;
+    ThreadPool m_thread_pool;
+    DirMonitor m_dir_monitor;
+    DL_Loader m_lib_loader;
+    Factory<TPTask, Key, Args> m_factory;
     std::vector<std::unique_ptr<GateWay<Key, Args>>> m_gateways;
 
 };
 
-// diff header
 template <typename Key, typename Args>
-class GateWay
+RequestEngine<Key, Args>::RequestEngine(const std::string& plugings_dir_path,
+            size_t num_of_threads) :
+            m_req_engine_stt(Status::INIT),
+            m_fd_monitor(new Epoll(MAX_EVENTS_TO_WAKE)),
+            m_thread_pool(num_of_threads),
+            m_dir_monitor(plugings_dir_path),
+            m_lib_loader(m_dir_monitor.GetDispatcher())
 {
 
-public:
-    explicit GateWay(int fd);
-    virtual ~GateWay();
+}
 
-    GateWay(const GateWay& other) = default;
-    GateWay& operator=(const GateWay& other)=  default;
-    GateWay(GateWay&& other) = default;
-    GateWay& operator=(GateWay&& other)=  default;
-
-    virtual std::pair<Key, Args> Read() = 0;
-
-private:
-
-    int m_fd;
-};
-
-
-// diffrent header
-class RETask : public TPTask
+template <typename Key, typename Args>
+RequestEngine<Key, Args>::~RequestEngine()
 {
-public:
-    enum class TaskPriority
+}
+
+template <typename Key, typename Args>
+void RequestEngine<Key, Args>::AddTask(const Key& key, CreatorFunc func)
+{
+    m_factory.Add(key, func);
+}
+
+template <typename Key, typename Args>
+void RequestEngine<Key, Args>::
+AddGateWay(std::unique_ptr<GateWay<Key, Args>> gateway)
+{
+    m_fd_monitor->Add(gateway->GetFd(), Epoll::READ_FD);
+
+    m_gateways.push_back(std::move(gateway));
+}
+
+template <typename Key, typename Args>
+void RequestEngine<Key, Args>::Run()
+{
+    int stt = 0;
+    std::pair<Key, Args> info;
+
+    m_req_engine_stt = Status::RUN;
+
+    while (Status::RUN == m_req_engine_stt)
     {
-        LOW = 0,
-        MEDIUM,
-        HIGH
-    };
+        stt = m_fd_monitor->WaitTimeOut(TIMEOUT);
+        printf("stt is %d\n", stt);
 
-	explicit RETask(TaskPriority priority = MEDIUM);
-	virtual ~RETask() = default;
+        if (0 != stt) // NOT Timed out
+        {
+            for (size_t i = 0; i < m_fd_monitor->Size(); ++i)
+            {
+                if (m_gateways[i]->GetFd() == (*m_fd_monitor)[0])
+                {
+                    info = m_gateways[i]->Read(this);
+                    m_thread_pool.AddTask(m_factory.Create(
+                                        info.first, std::move(info.second)));
+                }
+            }
+        }
+    }
+}
 
-	RETask(const RETask& other) = default;
-	RETask& operator= (const RETask& other) = default;
-	RETask(RETask&& other) = default;
-	RETask& operator= (RETask&& other) = default;
-
-private:
-
-	virtual void Execute() = 0;
-};
+template <typename Key, typename Args>
+void RequestEngine<Key, Args>::Stop()
+{
+    m_req_engine_stt = Status::STOP;
+}
 
 
 }	// end namespace hrd11
 
-#endif // __HRD11_RequestEngine_HPP__
+#endif // __HRD11_REQUEST_ENGINE_HPP__

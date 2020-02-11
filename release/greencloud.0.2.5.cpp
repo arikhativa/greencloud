@@ -25,12 +25,6 @@
 #include "nbd_tasks.hpp"
 #include "plug_and_play.hpp"
 
-#include "request_engine.hpp"
-#include "task_args.hpp"
-#include "gateway.hpp"
-#include "stdin_tasks.hpp"
-#include "stdin_gateway.hpp"
-
 
 #define LOG(lvl, msg) s_log->Write(lvl, msg, __FILE__, __LINE__)
 
@@ -38,6 +32,7 @@ using namespace hrd11;
 
 // Declarations ---------------------------------------------------------------
 static void PrintUsege();
+static int HundelInputFD();
 
 static void ExitLoop(int sig);
 static void SigAdd(struct sigaction& act, int sig);
@@ -47,8 +42,7 @@ static void SetSigMask();
 static void MainThreadSetSignals();
 static void RunGreenCloude(std::shared_ptr<DriverProxy> driver,
 							std::shared_ptr<Storage> storage);
-static void AddTasksToReqEngine(REQUEST_ENGINE* req_eng);
-
+static void AddTasksToFactory(FACTORY* factory);
 
 enum ExitStatus
 {
@@ -105,7 +99,7 @@ int main(int ac, char* av[])
 		}
 
 		RunGreenCloude(driver, storage);
-		printf("aaaaa\n");
+
 	}
 	catch (EpollError& e)
 	{
@@ -123,7 +117,6 @@ int main(int ac, char* av[])
 	}
 
 	exit_safe:
-	printf("end\n");
 
 	return SUCCESS;
 }
@@ -134,32 +127,65 @@ int main(int ac, char* av[])
 static void RunGreenCloude(std::shared_ptr<DriverProxy> driver,
 							std::shared_ptr<Storage> storage)
 {
-	std::unique_ptr<GateWay<TEMPLATE>> input(new StdinGateWay(driver, storage));
+	std::unique_ptr<Monitor> monitor(new Epoll(MAX_EVENTS_TO_WAKE));
+	std::unique_ptr<DriverData> data;
+	std::unique_ptr<ThreadInfo> current_info;
+	ThreadPool thread_pool;
+	DirMonitor subject(PLUGINS_PATH);
+	DL_Loader observer(subject.GetDispatcher());
 
-	RequestEngine<FactoryKey , std::unique_ptr<TaskInfo>> req_eng(PLUGINS_PATH, 1);
+	FACTORY* factory = Handleton<FACTORY>::GetInstance();
 
-	AddTasksToReqEngine(&req_eng);
+	AddTasksToFactory(factory);
 
-	req_eng.AddGateWay(std::move(input));
+	monitor->Add(STDIN_FILENO, Epoll::READ_FD);
+	monitor->Add(driver->GetReqFd(), Epoll::READ_FD);
 
-	printf("going into run\n");
-	req_eng.Run();
+	while (1)
+	{
+		monitor->Wait();
 
-	printf("out run\n");
+		if (STDIN_FILENO == (*monitor)[0])
+		{
+			if (END_PROG == HundelInputFD())
+			{
+				driver->Disconnect();
+				goto exit_safe;
+			}
+		}
+		else
+		{
+			data = driver->ReceiveRequest();
+
+			DataType current_type = data->m_type;
+			if (DISCONNECT == current_type)
+			{
+				driver->Disconnect();
+				goto exit_safe;
+			}
+
+			current_info.reset(
+							new ThreadInfo(driver, storage, std::move(data)));
+
+			thread_pool.AddTask(
+						factory->Create(current_type, std::move(current_info)));
+		}
+	}
+
+	exit_safe:
+
+	Handleton<FACTORY>::ReleaseResources();
 
 	return ;
 }
 
-static void AddTasksToReqEngine(REQUEST_ENGINE* req_eng)
+static void AddTasksToFactory(FACTORY* factory)
 {
-	req_eng->AddTask(FactoryKey::Q_EXIT, STDINExit::Create);
-	req_eng->AddTask(FactoryKey::IGNORE, STDINIgnore::Create);
-
-	// req_eng->AddTask(FactoryKey::READ, NBDRead::Create);
-	// req_eng->AddTask(FactoryKey::WRITE, NBDWrite::Create);
-	// req_eng->AddTask(FactoryKey::FLUSH, NBDFlush::Create);
-	// req_eng->AddTask(FactoryKey::TRIM, NBDTrim::Create);
-	// req_eng->AddTask(FactoryKey::BAD_REQUEST, NBDBadRequest::Create);
+	factory->Add(READ, NBDRead::Create);
+	factory->Add(WRITE, NBDWrite::Create);
+	factory->Add(FLUSH, NBDFlush::Create);
+	factory->Add(TRIM, NBDTrim::Create);
+	factory->Add(BAD_REQUEST, NBDBadRequest::Create);
 }
 
 static void PrintUsege()
@@ -168,6 +194,23 @@ static void PrintUsege()
 	std::cerr << "size_of_storage, path_to_fd" << std::endl;
 	std::cerr << "-- usage green_cloud.0.1.out:\t";
 	std::cerr << "size_of_block num_of_blocks path_to_fd" << std::endl;
+}
+
+static int HundelInputFD()
+{
+	char input[BUFF_SIZE];
+	int stt = read(STDIN_FILENO, &input, BUFF_SIZE);
+
+	if (0 > stt)
+	{
+		Logger* log = Handleton<Logger>::GetInstance(LOG_PATH, LOG_LVL);
+		log->Write(LOG_ERROR, "HundelInputFD() fail to read from stdin",
+								__FILE__, __LINE__);
+
+		throw std::runtime_error("HundelInputFD() fail to read from stdin");
+	}
+
+	return ('q' == input[0]);
 }
 
 

@@ -1,1 +1,20 @@
 Data & Time                ID      Source File                  Line  Type   ThreadId         Massage
+Tue Feb 11 18:02:16 2020   23446   greencloud.0.3.cpp           253   Debug  140113082829696  setting main thread signls
+Tue Feb 11 18:02:16 2020   23446   greencloud.0.3.cpp           264   Info   140113082829696  main thread signls are set
+Tue Feb 11 18:02:16 2020   23446   nbd_driver_proxy.cpp         81    Info   140113082829696  NBDDriverProxy() ctor is done
+Tue Feb 11 18:02:16 2020   23446   nbd_driver_proxy.cpp         222   Info   140113058051840  ThreadFuncSetNBD() begin
+Tue Feb 11 18:02:16 2020   23446   plug_and_play.cpp            32    Debug  140113082829696  DirMonitor()
+Tue Feb 11 18:02:16 2020   23446   plug_and_play.cpp            129   Debug  140113082829696  DL_Loader()
+Tue Feb 11 18:02:16 2020   23446   plug_and_play.cpp            69    Debug  140112973264640  Monitor()
+Tue Feb 11 18:02:16 2020   23446   plug_and_play.cpp            99    Debug  140112973264640  Monitor() - begin to monitor directory
+Tue Feb 11 18:02:17 2020   23446   plug_and_play.cpp            134   Debug  140113082829696  ~DL_Loader()
+Tue Feb 11 18:02:17 2020   23446   plug_and_play.cpp            37    Debug  140113082829696  ~DirMonitor()
+Tue Feb 11 18:02:17 2020   23446   plug_and_play.cpp            46    Debug  140113082829696  ~DirMonitor() - thread.join()
+Tue Feb 11 18:02:17 2020   23446   nbd_driver_proxy.cpp         195   Debug  140113049659136  NBDDriverProxy::Disconnect() begin
+Tue Feb 11 18:02:17 2020   23446   nbd_driver_proxy.cpp         203   Debug  140113049659136  NBDDriverProxy::Disconnect() joining thread
+Tue Feb 11 18:02:17 2020   23446   nbd_driver_proxy.cpp         246   Info   140113058051840  ThreadFuncSetNBD() done
+Tue Feb 11 18:02:17 2020   23446   nbd_driver_proxy.cpp         205   Debug  140113049659136  NBDDriverProxy::Disconnect() joined thread
+Tue Feb 11 18:02:17 2020   23446   plug_and_play.cpp            120   Debug  140112973264640  Monitor() - exit SUCCESS
+Tue Feb 11 18:02:17 2020   23446   plug_and_play.cpp            49    Debug  140113082829696  ~DirMonitor() - end
+Tue Feb 11 18:02:47 2020   23446   nbd_driver_proxy.cpp         210   Info   140113049659136  NBDDriverProxy::Disconnect() done
+Tue Feb 11 18:02:47 2020   23446   nbd_driver_proxy.cpp         92    Info   140113082829696  NBDDriverProxy() dtor is done

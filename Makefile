@@ -16,6 +16,7 @@ GLOBAL_SRC := ./lib/libglobals.cpp
 GLOBAL_OBJ := ./libglobals.o
 
 SRC := $(wildcard $(SRC_DIR)/*.cpp)
+HEDS := $(wildcard $(HED_DIR)/*.hpp)
 EXE := $(NAME).out
 NAME_SRC := $(NAME).cpp
 OBJ := $(notdir $(SRC:.cpp=.o))
@@ -43,11 +44,11 @@ all: $(EXE)
 	$(CC) $(CFLAGS) -fPIC $< -I $(HED_DIR)
 	mv *.o $(OBJ_DIR)
 
-$(LIB): $(OBJ) $(GLOBAL_LIB)
+$(LIB): $(OBJ) $(SRC) $(GLOBAL_LIB) $(HEDS)
 	$(CC) $(LFLAGS) -shared $(OBJS) -o $@ $(DLFLAGS) -I $(HED_DIR)
 	sudo mv $@ /usr/lib/
 
-$(EXE): $(NAME_SRC) $(LIB) $(SRC)
+$(EXE): $(NAME_SRC) $(LIB)
 	$(CC) $(LFLAGS) -fPIC $< -o $@ $(DLFLAGS) -lgreencloud -I $(HED_DIR)
 
 $(GLOBAL_LIB): $(GLOBAL_SRC)

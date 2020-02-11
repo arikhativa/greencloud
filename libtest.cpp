@@ -18,42 +18,14 @@
 namespace hrd11
 {
 
-
-// class NBDRead1 : public TPTask
-// {
-// public:
-//     static std::unique_ptr<NBDRead> Create(std::unique_ptr<ThreadInfo> info)
-//     {
-//         return NBDRead::Create(std::move(info));
-//     }
-//
-// private:
-//     NBDRead1(std::unique_ptr<ThreadInfo> info) : m_info(std::move(info))
-//     {}
-//
-//     void Execute() override
-//     {
-//         m_info->m_data = m_info->m_storage->Read(std::move(m_info->m_data));
-//         m_info->m_driver->SendReply(std::move(m_info->m_data));
-//     }
-//
-//     std::unique_ptr<ThreadInfo> m_info;
-// };
-
 std::unique_ptr<NBDRead> CCC(std::unique_ptr<ThreadInfo> info)
 {
     printf("here\n");
 
-    // return std::move(NBDRead::Create(std::move(info)));
-    return std::unique_ptr<NBDRead>(new NBDRead(std::move(info)));
+    return std::move(NBDRead::Create(std::move(info)));
 }
 
-void Foo()
-{
-        printf("here\n");
-}
-
-static void InitSharedObjet() __attribute__((constructor));
+void InitSharedObjet() __attribute__((constructor));
 
 void InitSharedObjet()
 {

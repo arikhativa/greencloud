@@ -53,10 +53,12 @@ ThreadPool::ThreadPool(size_t num_of_threads) :
 
 ThreadPool::~ThreadPool()
 {
+	printf("~TP\n");
 	if (m_threads[0].joinable())
 	{
 		Stop();
 	}
+	printf("~TP end\n");
 }
 
 void ThreadPool::AddTask(std::unique_ptr<TPTask> new_task)
@@ -70,10 +72,12 @@ void ThreadPool::Stop()
 
 	for (size_t i = 0; i < thread_num; ++i)
 	{
+		printf("TP Stop\n");
 		AddTask(std::unique_ptr<TPTask>(new TPStop));
 	}
 	for (size_t i = 0; i < thread_num; ++i)
 	{
+		printf("TP join\n");
 		m_threads[i].join();
 	}
 }
@@ -127,9 +131,12 @@ void ThreadPool::ThreadFunc()
 
 	while(RUN == run)
 	{
+		write(1, "A\n", 2);
 		m_task_queue.Pop(task);
 		try
 		{
+			write(1, "B\n", 2);
+
 			task->Execute();
 		}
 		catch (const ThreadMsg& e)
@@ -137,6 +144,8 @@ void ThreadPool::ThreadFunc()
 			switch (e.m_msg)
 			{
 				case ThreadMsg::MsgType::STOP:
+					write(1, "C\n", 2);
+
 					run = DONT_RUN;
 					break ;
 

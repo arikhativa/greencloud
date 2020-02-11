@@ -91,6 +91,11 @@ int Epoll::WaitTimeOut(int timeout)
     return ret;
 }
 
+size_t Epoll::Size()
+{
+    return m_events.size();
+}
+
 int Epoll::operator[](size_t index)
 {
     return m_events[index].data.fd;

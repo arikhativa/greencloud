@@ -4,7 +4,7 @@
 
 #include <memory>		// std::unique_ptr
 
-#include "tptask.hpp"
+#include "retask.hpp"
 #include "nbd_driver_proxy.hpp"
 #include "disk_storage.hpp"
 #include "driver_data.hpp"
@@ -28,7 +28,7 @@ struct ThreadInfo
 	std::unique_ptr<DriverData> m_data;
 };
 
-class NBDRead : public TPTask
+class NBDRead : public RETask
 {
 public:
     static std::unique_ptr<NBDRead> Create(std::unique_ptr<ThreadInfo> info)
@@ -36,7 +36,7 @@ public:
         return std::unique_ptr<NBDRead>(new NBDRead(std::move(info)));
     }
 
-// private:
+private:
     NBDRead(std::unique_ptr<ThreadInfo> info) : m_info(std::move(info))
     {}
 
@@ -49,7 +49,7 @@ public:
     std::unique_ptr<ThreadInfo> m_info;
 };
 
-class NBDWrite : public TPTask
+class NBDWrite : public RETask
 {
 public:
     static std::unique_ptr<NBDWrite> Create(std::unique_ptr<ThreadInfo> info)
@@ -70,7 +70,7 @@ private:
     std::unique_ptr<ThreadInfo> m_info;
 };
 
-class NBDFlush : public TPTask
+class NBDFlush : public RETask
 {
 public:
     static std::unique_ptr<NBDFlush> Create(std::unique_ptr<ThreadInfo> info)
@@ -90,7 +90,7 @@ private:
     std::unique_ptr<ThreadInfo> m_info;
 };
 
-class NBDTrim : public TPTask
+class NBDTrim : public RETask
 {
 public:
     static std::unique_ptr<NBDTrim> Create(std::unique_ptr<ThreadInfo> info)
@@ -110,7 +110,7 @@ private:
     std::unique_ptr<ThreadInfo> m_info;
 };
 
-class NBDBadRequest : public TPTask
+class NBDBadRequest : public RETask
 {
 public:
     static std::unique_ptr<NBDBadRequest> Create(std::unique_ptr<ThreadInfo> info)

@@ -48,14 +48,16 @@ public:
     Handleton(Handleton&& other) = delete;
     Handleton& operator=(Handleton&& other) = delete;
 
-
     template<typename... Args>
     static T* GetInstance(Args... args);
+
+    static void ReleaseResources();
 
 private:
     static std::mutex s_mutex;
     static std::atomic<T*> s_instance;
     static std::unique_ptr<T> s_ptr; // using unique_ptr only for RAII
+
 };
 
 
@@ -101,6 +103,12 @@ inline T* Handleton<T>::GetInstance(Args... args)
     }
 
     return tmp;
+}
+
+template <typename T>
+void Handleton<T>::ReleaseResources()
+{
+    Handleton<T>::s_ptr.reset();
 }
 
 }   // end namespace hrd11

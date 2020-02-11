@@ -28,6 +28,7 @@ public:
     virtual void Remove(int fd) = 0;
     virtual int Wait() = 0;
     virtual int WaitTimeOut(int timeout) = 0;
+    virtual size_t Size() = 0;
     virtual int operator[](size_t index) = 0;
 
 private:
