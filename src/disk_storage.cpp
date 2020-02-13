@@ -25,7 +25,7 @@ DiskStorage::~DiskStorage()
 std::unique_ptr<DriverData> DiskStorage::Write(std::unique_ptr<DriverData> data)
 {
 
-    printf("Request for write of size %d\n", data->m_len);
+    printf("Request for write of size %u\n", data->m_len);
 
     std::lock_guard<std::mutex> lock(m_mutex);
     m_file.seekp(data->m_offset);
@@ -36,7 +36,7 @@ std::unique_ptr<DriverData> DiskStorage::Write(std::unique_ptr<DriverData> data)
 
 std::unique_ptr<DriverData> DiskStorage::Read(std::unique_ptr<DriverData> data)
 {
-    printf("Request for read of size %d\n", data->m_len);
+    printf("Request for read of size %u\n", data->m_len);
 
     data->m_buff.reserve(data->m_len);
 

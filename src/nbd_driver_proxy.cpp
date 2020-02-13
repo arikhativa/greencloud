@@ -96,7 +96,7 @@ std::unique_ptr<DriverData> NBDDriverProxy::ReceiveRequest()
 {
 	struct nbd_request request;
 	ssize_t bytes_read = 0;
-	std::unique_ptr<DriverData> ret(new DriverData(0));
+	std::unique_ptr<DriverData> ret(new DriverData);
 
 	memset(&request, 0, sizeof(request));
 
@@ -128,38 +128,38 @@ std::unique_ptr<DriverData> NBDDriverProxy::ReceiveRequest()
 
 			ret->m_offset = Ntohll(request.from);
 			ret->m_len = len;
-			ret->m_type = READ;
+			ret->m_key = FactoryKey::READ;
 			break ;
 
 		case NBD_CMD_WRITE:
 
 			ret->m_offset = Ntohll(request.from);
 			ret->m_len = len;
-			ret->m_type = WRITE;
+			ret->m_key = FactoryKey::WRITE;
 			ret->m_buff.reserve(len);
 			ReadAll(m_req_fd, ret->m_buff.data(), len);
 			break ;
 
 		case NBD_CMD_DISC:
 
-			ret->m_type = DISCONNECT;
+			ret->m_key = FactoryKey::DISCONNECT;
 			break ;
 
 		case NBD_CMD_FLUSH:
 
-			ret->m_type = FLUSH;
+			ret->m_key = FactoryKey::FLUSH;
 			break ;
 
 		case NBD_CMD_TRIM:
 
-			ret->m_type = TRIM;
+			ret->m_key = FactoryKey::TRIM;
 			break ;
 
 		default:
 			s_log->Write(LOG_ERROR,
 				"ReceiveRequest() resived an unknown request from nbd",
 							__FILE__, __LINE__);
-			ret->m_type = BAD_REQUEST;
+			ret->m_key = FactoryKey::BAD_REQUEST;
 	}
 
 	return std::move(ret);
@@ -184,7 +184,7 @@ void NBDDriverProxy::SendReply(std::unique_ptr<DriverData> data)
 	std::lock_guard<std::mutex> lock(m_mutex);
 	WriteAll(m_req_fd, (char*)&reply, sizeof(struct nbd_reply));
 
-	if (READ == data->m_type)
+	if (FactoryKey::READ == data->m_key)
 	{
 		WriteAll(m_req_fd, data->m_buff.data(), data->m_len);
 	}

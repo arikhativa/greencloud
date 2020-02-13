@@ -5,8 +5,6 @@
 #include <memory>		// std::unique_ptr
 
 #include "retask.hpp"
-#include "request_engine.hpp"
-
 #include "task_args.hpp"
 
 namespace hrd11
@@ -26,7 +24,6 @@ private:
 
     void Execute() override
     {
-		printf("Disconnect\n");
         m_info->m_driver->Disconnect();
     }
 
@@ -47,8 +44,6 @@ private:
 
     void Execute() override
     {
-		printf("Ignore\n");
-
 	}
 
     std::unique_ptr<TaskInfo> m_info;

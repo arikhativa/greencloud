@@ -18,7 +18,7 @@
 namespace hrd11
 {
 
-std::unique_ptr<NBDRead> CCC(std::unique_ptr<ThreadInfo> info)
+std::unique_ptr<NBDRead> CCC(std::unique_ptr<TaskInfo> info)
 {
     printf("here\n");
 
@@ -35,8 +35,11 @@ void InitSharedObjet()
 
     LOG(LOG_DEBUG, "in .so");
 
-    FACTORY* factory = Handleton<FACTORY>::GetInstance();
-    printf("-- fac ret %d\n", factory->Add(READ, &CCC));
+    RequestEngine<TEMPLATE>* req_eng = Handleton<RequestEngine<TEMPLATE>>
+                                                ::GetInstance(PLUGINS_PATH);
+
+    req_eng->AddTask(FactoryKey::READ, &CCC);
+
 }
 
 } // end namespace hrd11

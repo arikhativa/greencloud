@@ -25,9 +25,11 @@
 #include <string>             // std:sting
 
 // Local include --------------------------------------------------------------
+#include "handleton.hpp"
 #include "epoll.hpp"
 #include "gateway.hpp"
 #include "retask.hpp"
+#include "tptask.hpp"
 #include "thread_pool.hpp"
 #include "factory.hpp"
 #include "plug_and_play.hpp"
@@ -53,9 +55,6 @@ public:
         STOP
     };
 
-    // hardware_concurrncy comment
-    RequestEngine(const std::string& plugings_dir_path,
-                size_t num_of_threads = std::thread::hardware_concurrency());
     ~RequestEngine();
 
     // unmcopyable
@@ -74,6 +73,13 @@ public:
     void Stop();
 
 private:
+    template<typename T>
+    friend class hrd11::Handleton;
+
+    // TODO: hardware_concurrncy comment
+    RequestEngine(const std::string& plugings_dir_path,
+        size_t num_of_threads = std::thread::hardware_concurrency());
+
     Status m_req_engine_stt;
     std::unique_ptr<Monitor> m_fd_monitor;
     ThreadPool m_thread_pool;
@@ -92,14 +98,11 @@ RequestEngine<Key, Args>::RequestEngine(const std::string& plugings_dir_path,
             m_thread_pool(num_of_threads),
             m_dir_monitor(plugings_dir_path),
             m_lib_loader(m_dir_monitor.GetDispatcher())
-{
-
-}
+{}
 
 template <typename Key, typename Args>
 RequestEngine<Key, Args>::~RequestEngine()
-{
-}
+{}
 
 template <typename Key, typename Args>
 void RequestEngine<Key, Args>::AddTask(const Key& key, CreatorFunc func)
@@ -127,11 +130,10 @@ void RequestEngine<Key, Args>::Run()
     while (Status::RUN == m_req_engine_stt)
     {
         stt = m_fd_monitor->WaitTimeOut(TIMEOUT);
-        printf("stt is %d\n", stt);
 
         if (0 != stt) // NOT Timed out
         {
-            for (size_t i = 0; i < m_fd_monitor->Size(); ++i)
+            for (size_t i = 0; i < m_gateways.size(); ++i)
             {
                 if (m_gateways[i]->GetFd() == (*m_fd_monitor)[0])
                 {
@@ -149,7 +151,6 @@ void RequestEngine<Key, Args>::Stop()
 {
     m_req_engine_stt = Status::STOP;
 }
-
 
 }	// end namespace hrd11
 

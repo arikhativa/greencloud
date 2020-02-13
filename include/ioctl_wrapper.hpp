@@ -3,7 +3,11 @@
     Ioctl -
 
     Discription:    Ioctl is a wrapper to ioctl().
-                    it can throw IoctlError().
+
+    Usage:          The same way of ioctl().
+
+    Exceptions:     std::bad_alloc
+                    IoctlError
 
     Date:           27.1.2020
 
@@ -40,8 +44,6 @@ private:
     ssize_t m_flags;
     mutable std::string m_error;
 };
-
-//  can throw (IoctlError) inherted from (std::runtime_error)
 
 void Ioctl(int fd, size_t macro, ssize_t flags);
 

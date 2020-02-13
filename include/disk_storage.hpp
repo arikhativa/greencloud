@@ -30,7 +30,7 @@ class DiskStorage : public Storage
 public:
 	// uncopiable through inheritence
 	DiskStorage(const std::string& file_name, size_t size);
-	virtual ~DiskStorage();
+	virtual ~DiskStorage() override;
 
 	virtual std::unique_ptr<DriverData> Write(std::unique_ptr<DriverData> data) override;
 	virtual std::unique_ptr<DriverData> Read(std::unique_ptr<DriverData> data) override;

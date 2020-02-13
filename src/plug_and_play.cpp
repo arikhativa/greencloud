@@ -8,6 +8,7 @@
 #include <thread>       // std::thread
 
 // Local include --------------------------------------------------------------
+#include "monitor.hpp"
 #include "epoll.hpp"
 #include "plug_and_play.hpp"
 #include "dispatcher_callback.hpp"
@@ -41,11 +42,9 @@ DirMonitor::~DirMonitor()
 
     SetThreadStatus(END_THREAD);
 
-    printf("~DirMonitor() joning\n");
 
     LOG(LOG_DEBUG, "~DirMonitor() - thread.join()");
     m_monitor.join();
-    printf("~DirMonitor() joned\n");
     LOG(LOG_DEBUG, "~DirMonitor() - end");
 }
 
@@ -68,7 +67,7 @@ void DirMonitor::Monitor(const std::string& dir_path)
 {
     LOG(LOG_DEBUG, "Monitor()");
 
-    Epoll epoll(1);
+    std::unique_ptr<hrd11::Monitor> monitor(new Epoll(1));
     int m_dir_fd;
     int stt = 0;
     // buf is allocated the same way the manual page for inotify alloc it.
@@ -92,15 +91,14 @@ void DirMonitor::Monitor(const std::string& dir_path)
         LOG(LOG_ERROR, "Monitor() - inotify_add_watch() fail");
     }
 
-    epoll.Add(m_dir_fd, Epoll::READ_FD);
+    monitor->Add(m_dir_fd, Epoll::READ_FD);
 
     SetThreadStatus(RUNING);
 
     LOG(LOG_DEBUG, "Monitor() - begin to monitor directory");
     while (RUNING == GetThreadStatus())
     {
-        printf("Monitor(thread)\n");
-        stt = epoll.WaitTimeOut(TIMEOUT);
+        stt = monitor->WaitTimeOut(TIMEOUT);
 
         if (0 < stt) // Epoll not timed out
         {
@@ -133,7 +131,6 @@ DL_Loader::~DL_Loader()
 {
     LOG(LOG_DEBUG, "~DL_Loader()");
 
-    printf("~dl()\n");
     for (size_t i = 0; i < m_fds.size(); ++i)
     {
         if (dlclose(m_fds[i]))
@@ -143,7 +140,6 @@ DL_Loader::~DL_Loader()
             LOG(LOG_ERROR, msg);
         }
     }
-    printf("~dl() end\n");
 }
 
 void DL_Loader::LoadLib(const std::string& path)

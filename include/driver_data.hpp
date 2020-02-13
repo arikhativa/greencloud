@@ -17,34 +17,26 @@
 #include <vector>	// vector()
 #include <cstddef>	// size_t
 
+#include "globals.hpp"	// FactoryKey
+
 namespace hrd11
 {
 
 static const int HANDLE_SIZE = 8;
 
-enum DataType
-{
-	READ = 0,
-	WRITE,
-	DISCONNECT,
-	FLUSH,
-	TRIM,
-	BAD_REQUEST
-};
-
 struct DriverData
 {
-	DriverData();
-	DriverData(unsigned int len);
-
-	void SetInfo(size_t offset, char handler[HANDLE_SIZE], DataType type);
+	DriverData() = default;
+	~DriverData() = default;
 
 	size_t m_offset;
+	int m_req_id;
 	char m_handler[HANDLE_SIZE];
 	unsigned int m_len;
-	DataType m_type;
+	FactoryKey m_key;
 	int m_status; // describe expected status
 	std::vector<char> m_buff;
+
 };
 
 }   // end namespace hrd11

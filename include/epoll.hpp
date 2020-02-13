@@ -39,7 +39,6 @@ public:
     virtual void Remove(int fd) override;
     virtual int Wait() override;
     virtual int WaitTimeOut(int timeout) override;
-    virtual size_t Size() override;
     virtual int operator[](size_t index) override;
 
 private:

@@ -29,8 +29,6 @@
 #include <memory>           // std::unique_ptr
 #include <stdexcept>        // std::logic_error
 
-#include "handleton.hpp"
-
 namespace hrd11
 {
 
@@ -76,8 +74,6 @@ public:
     std::unique_ptr<Base> Create(const Key& key, Args args);
 
 private:
-    template<typename T>
-    friend class hrd11::Handleton;
 
     std::unordered_map<Key, CreatorFunc> m_umap;
 };

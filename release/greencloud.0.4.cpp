@@ -17,9 +17,9 @@
 #include "gateway.hpp"
 #include "stdin_tasks.hpp"
 #include "stdin_gateway.hpp"
-#include "nbd_gateway.hpp"
+#include "driver_proxy_gateway.hpp"
 #include "storage.hpp"
-#include "disk_storage.hpp"
+#include "mmap_storage.hpp"
 
 #define LOG(lvl, msg) s_log->Write(lvl, msg, __FILE__, __LINE__)
 
@@ -73,7 +73,7 @@ int main(int ac, char* av[])
 				size *= CONVTER_TO_MB;
 
 				driver.reset(new NBDDriverProxy(size, av[2]));
-				storage.reset(new DiskStorage(STORAGE_FILE_PATH, size));
+				storage.reset(new MmapStorage(STORAGE_FILE_PATH, size));
 				break ;
 			}
 			case 4:
@@ -83,7 +83,7 @@ int main(int ac, char* av[])
 
 				driver.reset(new NBDDriverProxy(blk_size, num_of_blocks,
 					 							av[3]));
-				storage.reset(new DiskStorage(STORAGE_FILE_PATH,
+				storage.reset(new MmapStorage(STORAGE_FILE_PATH,
 					 							blk_size * num_of_blocks));
 				break ;
 			}
@@ -124,7 +124,7 @@ static void RunGreenCloude(std::shared_ptr<DriverProxy> driver,
 	std::unique_ptr<GateWay<TEMPLATE>> stdin_gateway(
 											new StdinGateWay(driver, storage));
 	std::unique_ptr<GateWay<TEMPLATE>> nbd_gateway(
-											new NBDGateWay(driver, storage));
+											new DriverProxyGateWay(driver, storage));
 
 	RequestEngine<TEMPLATE>* req_eng = Handleton<RequestEngine<TEMPLATE>>
 												::GetInstance(PLUGINS_PATH);

@@ -18,7 +18,7 @@ public:
     };
 
 	explicit RETask(TaskPriority priority = TaskPriority::MEDIUM) :
-                                    TPTask((TPTask::TaskPriority)priority)
+                            TPTask(static_cast<TPTask::TaskPriority>(priority))
     {}
 
 	virtual ~RETask() = default;
