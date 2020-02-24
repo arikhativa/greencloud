@@ -18,6 +18,8 @@
 
 #define LOG(lvl, msg) s_log->Write(lvl, msg, __FILE__, __LINE__)
 
+typedef void (*fp_t)(void);
+
 namespace hrd11
 {
 
@@ -118,7 +120,6 @@ void DirMonitor::Monitor(const std::string& dir_path)
     LOG(LOG_DEBUG, "Monitor() - exit SUCCESS");
 }
 
-typedef void (*fp_t)(void);
 
 // DL_Loader ------------------------------------------------------------------
 DL_Loader::DL_Loader(Dispatcher<std::string>* dispatcher) :
@@ -146,7 +147,7 @@ void DL_Loader::LoadLib(const std::string& path)
 {
     LOG(LOG_DEBUG, "LoadLib() - begin");
 
-    void *handle = 0;
+    void *handle = nullptr;
 
     handle = dlopen(path.c_str(), RTLD_LAZY);
     if (!handle)

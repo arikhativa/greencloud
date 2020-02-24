@@ -22,7 +22,8 @@
 #include "stdin_gateway.hpp"
 #include "driver_proxy_gateway.hpp"
 #include "storage.hpp"
-#include "mmap_storage.hpp"
+#include "cloud_storage.hpp"
+#include "slave_gateway.hpp"
 
 #define LOG(lvl, msg) s_log->Write(lvl, msg, __FILE__, __LINE__)
 
@@ -37,7 +38,7 @@ static void SigEmpty(struct sigaction& act);
 static void SetSigMask();
 static void MainThreadSetSignals();
 static void RunGreenCloude(std::shared_ptr<DriverProxy> driver,
-							std::shared_ptr<Storage> storage);
+							std::shared_ptr<CloudStorage> storage);
 static void AddTasksToReqEngine(REQUEST_ENGINE* req_eng);
 
 
@@ -61,45 +62,28 @@ static boost::property_tree::ptree* g_root;
 int main(int ac, char* av[])
 {
 	std::shared_ptr<DriverProxy> driver;
-	std::shared_ptr<Storage> storage;
+	std::shared_ptr<CloudStorage> storage;
 
 	boost::property_tree::ptree tmp;
 	boost::property_tree::read_json(JSON_PATH, tmp);
 	g_root = &tmp;
 
 	size_t storage_size = g_root->get<size_t>("storage_size");
-	size_t blk_size = g_root->get<size_t>("block_size");
-	size_t num_of_blocks = g_root->get<size_t>("num_of_blocks");
-	std::string storage_file_path =
-								g_root->get<std::string>("storage_file_path");
+	size_t num_of_slaves = g_root->get<size_t>("num_of_slaves");
 
+	if (1 == ac)
+	{
+		PrintUsege();
+		exit(ARGUMENTS);
+	}
 	try
 	{
+		storage_size *= CONVTER_TO_MB;
+
+		driver.reset(new NBDDriverProxy(storage_size, av[1]));
+		storage.reset(new CloudStorage(num_of_slaves, storage_size));
+
 		MainThreadSetSignals();
-
-		if (1 < ac)
-		{
-			if (storage_size)
-			{
-				storage_size *= CONVTER_TO_MB;
-
-				driver.reset(new NBDDriverProxy(storage_size, av[1]));
-				storage.reset(new MmapStorage(storage_file_path, storage_size));
-			}
-			else
-			{
-				driver.reset(new NBDDriverProxy(blk_size, num_of_blocks,
-					 							av[1]));
-				storage.reset(new MmapStorage(storage_file_path,
-					 							blk_size * num_of_blocks));
-			}
-		}
-		else
-		{
-			PrintUsege();
-			exit(ARGUMENTS);
-		}
-
 		RunGreenCloude(driver, storage);
 
 	}
@@ -127,7 +111,7 @@ int main(int ac, char* av[])
 // Static Functions -----------------------------------------------------------
 
 static void RunGreenCloude(std::shared_ptr<DriverProxy> driver,
-							std::shared_ptr<Storage> storage)
+							std::shared_ptr<CloudStorage> storage)
 {
 	std::unique_ptr<GateWay<TEMPLATE>> stdin_gateway(
 									new StdinGateWay(driver, storage));
@@ -135,14 +119,25 @@ static void RunGreenCloude(std::shared_ptr<DriverProxy> driver,
 									new DriverProxyGateWay(driver, storage));
 
 	std::string tmp = g_root->get<std::string>("plugins_dir_path");
+	size_t threads = g_root->get<size_t>("num_of_threads");
 
 	RequestEngine<TEMPLATE>* req_eng = Handleton<RequestEngine<TEMPLATE>>
-			::GetInstance(tmp.c_str());
+			::GetInstance(tmp.c_str(), threads);
 
 	AddTasksToReqEngine(req_eng);
 
+
 	req_eng->AddGateWay(std::move(stdin_gateway));
 	req_eng->AddGateWay(std::move(nbd_gateway));
+
+	std::vector<int> fds(storage->GetAllFds());
+
+	for (auto& iter : fds)
+	{
+		req_eng->AddGateWay(std::unique_ptr<GateWay<TEMPLATE>>(
+			new SlaveGateway(driver, storage, iter)));
+	}
+
 
 	req_eng->Run();
 	Handleton<RequestEngine<TEMPLATE>>::ReleaseResources();
@@ -159,6 +154,7 @@ static void AddTasksToReqEngine(REQUEST_ENGINE* req_eng)
 	req_eng->AddTask(FactoryKey::FLUSH, &NBDFlush::Create);
 	req_eng->AddTask(FactoryKey::TRIM, &NBDTrim::Create);
 	req_eng->AddTask(FactoryKey::BAD_REQUEST, &NBDBadRequest::Create);
+	req_eng->AddTask(FactoryKey::REPLAY, &NBDReplay::Create);
 }
 
 static void PrintUsege()

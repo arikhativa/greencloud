@@ -71,7 +71,7 @@ public:
     using CreatorFunc = std::function<std::unique_ptr<Base>(Args args)>;
     FactoryAddStatus Add(const Key& key, CreatorFunc func);
 
-    std::unique_ptr<Base> Create(const Key& key, Args args);
+    std::unique_ptr<Base> Create(const Key& key, Args&& args);
 
 private:
 
@@ -82,12 +82,7 @@ template <typename Base, typename Key, typename Args>
 FactoryAddStatus
 Factory<Base, Key, Args>::Add(const Key& key, CreatorFunc func)
 {
-    FactoryAddStatus ret = NEW;
-
-    if (m_umap.find(key) != m_umap.end())
-    {
-        ret = UPDATED;
-    }
+    FactoryAddStatus ret = static_cast<FactoryAddStatus>(m_umap.count(key));
 
     m_umap[key] = func;
 
@@ -96,7 +91,7 @@ Factory<Base, Key, Args>::Add(const Key& key, CreatorFunc func)
 
 template <typename Base, typename Key, typename Args>
 std::unique_ptr<Base>
-Factory<Base, Key, Args>::Create(const Key& key, Args args)
+Factory<Base, Key, Args>::Create(const Key& key, Args&& args)
 {
     auto iter = m_umap.find(key);
 

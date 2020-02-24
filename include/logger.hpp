@@ -34,8 +34,8 @@ namespace hrd11
 enum Loglvl
 {
     LOG_ERROR = 0,
-    LOG_INFO,
-    LOG_DEBUG
+    LOG_INFO = 1,
+    LOG_DEBUG = 2
 };
 
 enum LogFlags
@@ -56,7 +56,7 @@ private:
     friend class hrd11::Handleton;
 
     Logger(const std::string& path_and_filename, Loglvl lvl,
-            int flag = OVERRIDE_FILE);
+            bool overwrite_file = true);
     std::mutex m_mutex;
     std::ofstream m_file;
     Loglvl m_lvl;

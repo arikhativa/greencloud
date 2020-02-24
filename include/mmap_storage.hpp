@@ -18,6 +18,8 @@ public:
                                     std::unique_ptr<DriverData> data) override;
     virtual std::unique_ptr<DriverData> Read(
                                     std::unique_ptr<DriverData> data) override;
+    virtual size_t GetSize() override;
+    virtual void Disconnect() override;
 
 private:
     size_t m_size;

@@ -1,0 +1,20 @@
+
+
+{
+    "storage_size": 128,
+
+    "ip": "10.3.0.46",
+    "port": 6666,
+
+    "num_of_threads": 1,
+
+    "storage_file_path": "./storage.ignore",
+    "plugins_dir_path": "./plugins",
+
+    "timeout": 100,
+
+    "log_file_path": "./log/slave",
+    "log_lvl": 2,
+    "overwrite_file": true
+
+}

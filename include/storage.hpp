@@ -30,6 +30,8 @@ public:
 
 	virtual std::unique_ptr<DriverData> Write(std::unique_ptr<DriverData> data) = 0;
 	virtual std::unique_ptr<DriverData> Read(std::unique_ptr<DriverData> data) = 0;
+	virtual size_t GetSize() = 0;
+	virtual void Disconnect() = 0;
 };
 
 }	// namespace hrd11

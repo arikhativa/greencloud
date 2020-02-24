@@ -1,5 +1,5 @@
 
-NAME := greencloud.0.4
+NAME := greencloud.0.5
 SLAVE := slave.out
 
 SRC_DIR = src
@@ -16,17 +16,18 @@ GLOBAL_LIB := /usr/lib/libglobals.so
 GLOBAL_SRC := ./lib/libglobals.cpp
 GLOBAL_OBJ := ./libglobals.o
 
+LIB := /usr/lib/libgreencloud.so
+
 SRC := $(wildcard $(SRC_DIR)/*.cpp)
 HEDS := $(wildcard $(HED_DIR)/*.hpp)
 EXE := $(NAME).out
 NAME_SRC := $(NAME).cpp
 OBJ := $(notdir $(SRC:.cpp=.o))
-LIB := libgreencloud.so
 OBJS :=$(addprefix $(OBJ_DIR)/,$(OBJ))
 TESTS := $(wildcard $(TEST_DIR)/*.cpp)
 
-# CC = g++
-CC = arm-linux-gnueabihf-g++
+CC = g++
+# CC = arm-linux-gnueabihf-g++
 CFLAGS = -c -std=c++11 -pedantic-errors -Wall -Wextra -g
 LFLAGS = -std=c++11 -pedantic-errors -Wall -Wextra -g -pthread
 DLFLAGS = -lglobals -ldl
@@ -47,11 +48,11 @@ all: $(EXE)
 	mv *.o $(OBJ_DIR)
 
 $(LIB): $(OBJ) $(SRC) $(GLOBAL_LIB) $(HEDS)
-	$(CC) $(LFLAGS) -shared $(OBJS) -o $@ $(DLFLAGS) -I $(HED_DIR)
-	sudo mv $@ /usr/lib/
+	$(CC) $(LFLAGS) -shared $(OBJS) -o $(notdir $@) $(DLFLAGS) -I $(HED_DIR)
+	sudo mv $(notdir $@) /usr/lib/
 
-$(EXE): $(NAME_SRC) $(LIB)
-	$(CC) $(LFLAGS) -fPIC $< -o $@ $(DLFLAGS) -lgreencloud -I $(HED_DIR)
+$(EXE): $(NAME_SRC) $(GLOBAL_LIB) $(LIB)
+	$(CC) $(LFLAGS) $< -o $@ $(DLFLAGS) -lgreencloud -I $(HED_DIR)
 
 $(GLOBAL_LIB): $(GLOBAL_SRC)
 	$(CC) $(CFLAGS) -fPIC $^ -I $(HED_DIR)
@@ -60,7 +61,7 @@ $(GLOBAL_LIB): $(GLOBAL_SRC)
 	sudo mv $(notdir $@) /usr/lib/
 
 slave: $(SLAVE:.out=.cpp) $(OBJ) $(SRC) $(GLOBAL_LIB)
-	$(CC) $(LFLAGS) -fPIC $< $(OBJS) $(GLOBAL_SRC) -o $(SLAVE) -ldl -I $(HED_DIR)
+	$(CC) $(LFLAGS) $< $(OBJS) -o $(SLAVE) $(DLFLAGS) -I $(HED_DIR)
 
 
 
@@ -88,7 +89,9 @@ dis: $(EXE)
 
 
 clean:
-	rm *.out
-	rm $(OBJ_DIR)/*.o
+	rm -f *.out
+	rm -f $(OBJ_DIR)/*.o
+	sudo rm -f $(LIB)
+	sudo rm -f $(GLOBAL_LIB)
 
 re: clean all

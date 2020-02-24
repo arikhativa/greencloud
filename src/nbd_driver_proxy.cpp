@@ -162,6 +162,9 @@ std::unique_ptr<DriverData> NBDDriverProxy::ReceiveRequest()
 			ret->m_key = FactoryKey::BAD_REQUEST;
 	}
 
+	printf("NBDDriverProxy::RR() handler %lu\n", (size_t)ret->m_handler);
+
+
 	return std::move(ret);
 }
 
@@ -177,6 +180,8 @@ static void InitReaply(struct nbd_reply* reply, int status,
 
 void NBDDriverProxy::SendReply(std::unique_ptr<DriverData> data)
 {
+	printf("NBDDriverProxy::SendReply() handler %lu\n", (size_t)data->m_handler);
+
 	struct nbd_reply reply;
 
 	InitReaply(&reply, data->m_status, data->m_handler);

@@ -1,0 +1,27 @@
+
+
+"storage_size" -
+        - this value is in Mb (128 == 128mb).
+        - if the value is set, then "block_size" and "num_of_blocks"
+            are ignored.
+
+"timeout" -
+        - this value is in miliseconds (1000 == 1 sec).
+        - this value is refering to how often the program will check
+            if it should exit.
+
+"log_file_path" -
+        - string
+        - is a path AND a file name to a log file.
+
+"log_lvl" -
+        - limits the type of log to write.
+        - this value MUST be equal to one of the values defined in
+            logger.hpp. see the enum Loglvl.
+
+"overwrite_file" -
+        - this value is of type bool.
+        - if false, will create new file for every run.
+
+"plugins_dir_path" -
+        - path to plugins diractory.

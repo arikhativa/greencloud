@@ -30,32 +30,27 @@
 namespace hrd11
 {
 
-#ifndef LOG_LVL
-    #define LOG_LVL LOG_DEBUG
-#endif
+#define LOG_PATH    "./log/greencloud"
+#define LOG_LVL     LOG_DEBUG
+#define TIMEOUT 100
 
-#ifndef LOG_PATH
-    #define LOG_PATH "./log/greencloud"
-#endif
 
-#ifndef PLUGINS_PATH
-    #define PLUGINS_PATH "./plugins"
-#endif
+#define JSON_PATH "master_config.json"
+#define SLAVE_JSON_PATH "slave_config.json"
 
-#ifndef TIMEOUT
-    #define TIMEOUT 100
-#endif
+#define MAGIC_STR "Yoav's Master - I surrender to you..."
 
 enum class FactoryKey
 {
-    READ = 0,
-    WRITE,
-    DISCONNECT,
+    READ = 0,       // do not change
+    WRITE = 1,      // do not change
+    DISCONNECT = 2, // do not change
     FLUSH,
     TRIM,
     BAD_REQUEST,
     IGNORE,
     Q_EXIT,
+    REPLAY,
     KEY1,
     KEY2,
     KEY3,
@@ -72,7 +67,6 @@ class TaskInfo;
 
 #define TEMPLATE FactoryKey , std::unique_ptr<TaskInfo>
 #define REQUEST_ENGINE RequestEngine<TEMPLATE>
-
 
 }   //end namespace hrd11
 

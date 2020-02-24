@@ -1,51 +1,95 @@
 
+#include <cstring>      // strcpy()
+#include <netdb.h>      // struct sockaddr_in
+
 #include "slave_gateway.hpp"
+#include "cloud_storage.hpp"
 
-// TODO no reason for this
 
-// #include "handleton.hpp"
-// #include "logger.hpp"
-//
-// #define LOG(lvl, msg) s_log->Write(lvl, msg, __FILE__, __LINE__)
+#define BUFF_SIZE 4136
+
 
 namespace hrd11
 {
 
-// Globals --------------------------------------------------------------------
-// static Logger* s_log = Handleton<Logger>::GetInstance(LOG_PATH, LOG_LVL);
-
-
-// Members --------------------------------------------------------------------
-SlaveGateWay::SlaveGateWay(std::shared_ptr<DriverProxy> driver,
-                            std::shared_ptr<Storage> storage) :
-                            m_driver(driver),
-                            m_storage(storage)
+SlaveGateway::SlaveGateway(std::shared_ptr<DriverProxy> driver,
+                            std::shared_ptr<CloudStorage> storage,
+                            int socket) :
+    m_driver(driver),
+    m_storage(storage),
+    m_socket(socket)
 {
-    // LOG(LOG_INFO, "SlaveGateWay()");
+
 }
 
-int SlaveGateWay::GetFd()
+
+int SlaveGateway::GetFd()
 {
-    return m_driver->GetReqFd();
+    return m_socket;
 }
 
-std::pair<TEMPLATE> SlaveGateWay::Read(RequestEngine<TEMPLATE>* req_eng)
+std::pair<TEMPLATE> SlaveGateway::Read(RequestEngine<TEMPLATE>* req_eng)
 {
+    struct sockaddr_in nothing;
+    socklen_t len = 0;
+    char buf[BUFF_SIZE] = {0};
+    ssize_t stt = 0;
+
+    printf("SlaveGateway::Read()\n");
+
+    (void)req_eng;
+
     std::pair<TEMPLATE> ret;
-    std::unique_ptr<DriverData> data(m_driver->ReceiveRequest());
 
+    stt = recvfrom(m_socket, buf, BUFF_SIZE, MSG_WAITALL,
+        (struct sockaddr *)&nothing, &len);
 
-    ret.first = data->m_key;
-    ret.second = std::unique_ptr<TaskInfo>(
-                        new TaskInfo(m_driver, m_storage, std::move(data)));
-
-	if(FactoryKey::DISCONNECT == ret.first)
+    if (-1 == stt)
     {
-        // LOG(LOG_INFO, "SlaveGateWay::Read() - FactoryKey::DISCONNECT");
-        req_eng->Stop();
+        perror("SlaveGateway::Read() recvfrom()");
+        exit(1);
     }
 
+    std::unique_ptr<DriverData> data(CreateDataFromBuff(buf));
+
+    ret.second.reset(new TaskInfo(m_driver, m_storage, std::move(data)));
+    ret.first = FactoryKey::REPLAY;
+
     return ret;
+}
+
+
+std::unique_ptr<DriverData> SlaveGateway::CreateDataFromBuff(char* src)
+{
+    static const int BASE_TEN = 10;
+    bool stt = 0;
+
+    std::unique_ptr<DriverData> data(new DriverData);
+
+    char* runner = src;
+
+    data->m_offset = 0;
+    data->m_len = strtoul(runner, &runner, BASE_TEN);
+
+    stt = m_storage->IdToHandler(strtol((runner + 1), &runner, BASE_TEN),
+    data->m_handler);
+
+    if (false == stt)
+    {
+        perror("CreateDataFromBuff() - IdToHandler()");
+        exit(1);
+    }
+
+    data->m_key = static_cast<FactoryKey>((*(runner + 1)) - '0');
+
+    if (FactoryKey::READ == data->m_key)
+    {
+        printf("read -%s\n\n", runner);
+        data->m_buff.reserve(BUFF_SIZE + 1);
+        strcpy(data->m_buff.data(), (runner + 4));
+    }
+
+    return std::move(data);
 }
 
 }	// end namespace hrd11

@@ -15,7 +15,7 @@ namespace hrd11
 class SlaveDriverProxy : public DriverProxy
 {
 public:
-    SlaveDriverProxy(unsigned short port);
+    SlaveDriverProxy(const std::string& ip, unsigned short port);
 	~SlaveDriverProxy() override;
 
 	// uncopyable
@@ -32,7 +32,6 @@ public:
 	int GetReqFd() override;
 
 private:
-
     int m_socket;
     unsigned short m_port;
     struct sockaddr_in m_servaddr;

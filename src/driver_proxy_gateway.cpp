@@ -32,7 +32,6 @@ std::pair<TEMPLATE> DriverProxyGateWay::Read(RequestEngine<TEMPLATE>* req_eng)
     std::pair<TEMPLATE> ret;
     std::unique_ptr<DriverData> data(m_driver->ReceiveRequest());
 
-
     ret.first = data->m_key;
     ret.second = std::unique_ptr<TaskInfo>(
                         new TaskInfo(m_driver, m_storage, std::move(data)));

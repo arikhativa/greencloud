@@ -13,8 +13,12 @@
 #include <chrono>       // std::chrono::system_clock::now()
 #include <ctime>        // std::ctime()
 
+#include <boost/property_tree/json_parser.hpp>	// boost::property_tree::ptree
+#include <boost/property_tree/ptree.hpp> // boost::property_tree::ptree
+
 // local include --------------------------------------------------------------
 #include "logger.hpp"
+#include "globals.hpp"
 
 namespace hrd11
 {
@@ -42,40 +46,49 @@ static const size_t BASIC_LINE_LEN = DATE_LEN +
 
 // Special Members ------------------------------------------------------------
 
-Logger::Logger(const std::string& path_and_filename, Loglvl lvl, int flag) :
-                m_lvl(lvl)
+Logger::Logger(const std::string& path_and_filename,
+                Loglvl lvl,
+                bool overwrite_file) :
+  m_lvl(lvl)
 {
-    // size_t num = 1;
-    // std::string file_name = path_and_filename + std::to_string(num);
+    // boost::property_tree::ptree root;
+	// boost::property_tree::read_json(JSON_PATH, root);
     //
-    // if (flag == DONT_OVERRIDE_FILE)
-    // {
-    //     while (IsFileExists(file_name))
-    //     {
-    //         ++num;
-    //         file_name = path_and_filename + std::to_string(num);
-    //     }
-    // }
-    //
-    // m_file.open(file_name);
-    //
-    // if (!m_file.is_open())
-    // {
-    //     throw LoggerBadOpen("fail to open fail");
-    // }
-    //
-    // m_file << "Data & Time                "
-    // << "ID" << TAB_LEN
-    // << "Source File" << TAB_LEN << TAB_LEN << TAB_LEN
-    // << "Line" << "  "
-    // << "Type" << "   "
-    // << "ThreadId" << TAB_LEN << "   "
-    // << "Massage" << std::endl;
+    // std::string path_and_filename = root.get<std::string>("log_file_path");
+    // m_lvl = (Loglvl)root.get<int>("log_lvl");
+    // bool overwrite_file = root.get<bool>("overwrite_file");
+
+    size_t num = 1;
+    std::string file_name = path_and_filename + std::to_string(num);
+
+    if (!overwrite_file)
+    {
+        while (IsFileExists(file_name))
+        {
+            ++num;
+            file_name = path_and_filename + std::to_string(num);
+        }
+    }
+
+    m_file.open(file_name);
+
+    if (!m_file.is_open())
+    {
+        throw LoggerBadOpen("fail to open fail");
+    }
+
+    m_file << "Data & Time                "
+    << "ID" << TAB_LEN
+    << "Source File" << TAB_LEN << TAB_LEN << TAB_LEN
+    << "Line" << "  "
+    << "Type" << "   "
+    << "ThreadId" << TAB_LEN << "   "
+    << "Massage" << std::endl;
 }
 
 Logger::~Logger()
 {
-    // m_file.close();
+    m_file.close();
 }
 
 
@@ -84,39 +97,39 @@ void Logger::Write( Loglvl lvl,
                     const std::string& src_file,
                     int line)
 {
-    // std::lock_guard<std::mutex> lock(m_mutex);
-    //
-    // if (lvl <= m_lvl)
-    // {
-    //     char* full_line = new char[BASIC_LINE_LEN];
-    //     full_line[BASIC_LINE_LEN -1] = '\0';
-    //
-    //     const char* lvl_str;
-    //     switch (lvl)
-    //     {
-    //         case LOG_ERROR:
-    //         lvl_str = "Error";
-    //         break ;
-    //         case LOG_INFO:
-    //         lvl_str = "Info";
-    //         break ;
-    //         case LOG_DEBUG:
-    //         lvl_str = "Debug";
-    //         break ;
-    //     }
-    //
-    //     const char* file = GetFileNameFromFullName(src_file.c_str());
-    //
-    //
-    //     auto myid = std::this_thread::get_id();
-    //     std::stringstream ss;
-    //     ss << myid;
-    //     std::string th_str(ss.str());
-    //
-    //     m_file << EditLine(full_line, file, line, lvl_str) << th_str << "  "
-    //             << msg << "\n";
-    //     delete[] full_line;
-    // }
+    std::lock_guard<std::mutex> lock(m_mutex);
+
+    if (lvl <= m_lvl)
+    {
+        char* full_line = new char[BASIC_LINE_LEN];
+        full_line[BASIC_LINE_LEN -1] = '\0';
+
+        const char* lvl_str;
+        switch (lvl)
+        {
+            case LOG_ERROR:
+            lvl_str = "Error";
+            break ;
+            case LOG_INFO:
+            lvl_str = "Info";
+            break ;
+            case LOG_DEBUG:
+            lvl_str = "Debug";
+            break ;
+        }
+
+        const char* file = GetFileNameFromFullName(src_file.c_str());
+
+
+        auto myid = std::this_thread::get_id();
+        std::stringstream ss;
+        ss << myid;
+        std::string th_str(ss.str());
+
+        m_file << EditLine(full_line, file, line, lvl_str) << th_str << "  "
+                << msg << "\n";
+        delete[] full_line;
+    }
 }
 
 // Static Functions -----------------------------------------------------------
@@ -124,28 +137,28 @@ void Logger::Write( Loglvl lvl,
 static const char* EditLine(char* ret, const char* file_name,
                             int line, const char* lvl_str)
 {
-    // std::string id_str(std::to_string(getpid()));
-    // std::string line_str(std::to_string(line));
-    // char* run = ret;
-    // auto now = std::chrono::system_clock::now();
-    // std::time_t full_data = std::chrono::system_clock::to_time_t(now);
-    // char *time_str = std::ctime(&full_data);
-    //
-    // for (size_t i = 0; time_str[i]; ++i)
-    // {
-    //     if ('\n' == time_str[i])
-    //     {
-    //         time_str[i] = '\0';
-    //         break ;
-    //     }
-    // }
-    // run = AddStr(run, time_str, DATE_LEN);
-    // run = AddStr(run, id_str.c_str(), ID_LEN);
-    // run = AddStr(run, file_name, FILENAME_LEN);
-    // run = AddStr(run, line_str.c_str(), LINE_LEN);
-    // run = AddStr(run, lvl_str, TYPE_LEN);
-    //
-    // return ret;
+    std::string id_str(std::to_string(getpid()));
+    std::string line_str(std::to_string(line));
+    char* run = ret;
+    auto now = std::chrono::system_clock::now();
+    std::time_t full_data = std::chrono::system_clock::to_time_t(now);
+    char *time_str = std::ctime(&full_data);
+
+    for (size_t i = 0; time_str[i]; ++i)
+    {
+        if ('\n' == time_str[i])
+        {
+            time_str[i] = '\0';
+            break ;
+        }
+    }
+    run = AddStr(run, time_str, DATE_LEN);
+    run = AddStr(run, id_str.c_str(), ID_LEN);
+    run = AddStr(run, file_name, FILENAME_LEN);
+    run = AddStr(run, line_str.c_str(), LINE_LEN);
+    run = AddStr(run, lvl_str, TYPE_LEN);
+
+    return ret;
 }
 
 static const char* GetFileNameFromFullName(const char* full_name)

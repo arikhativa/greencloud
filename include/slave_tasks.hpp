@@ -51,35 +51,31 @@ private:
     {
         m_info->m_data = m_info->m_storage->Write(std::move(m_info->m_data));
 
-
-        if (m_info->m_data->m_offset < 67108864)
-        {
-            m_info->m_driver->SendReply(std::move(m_info->m_data));
-        }
+        m_info->m_driver->SendReply(std::move(m_info->m_data));
     }
 
     std::unique_ptr<TaskInfo> m_info;
 };
 
-// class SlaveDisconnect : public RETask
-// {
-// public:
-//     static std::unique_ptr<SlaveDisconnect> Create(std::unique_ptr<TaskInfo> info)
-//     {
-//         return std::unique_ptr<SlaveDisconnect>(new SlaveDisconnect(std::move(info)));
-//     }
-//
-// private:
-//     SlaveDisconnect(std::unique_ptr<TaskInfo> info) : m_info(std::move(info))
-//     {}
-//
-//     void Execute() override
-//     {
-//         m_info->m_driver->Disconnect();
-//     }
-//
-//     std::unique_ptr<TaskInfo> m_info;
-// };
+class SlaveDisconnect : public RETask
+{
+public:
+    static std::unique_ptr<SlaveDisconnect> Create(std::unique_ptr<TaskInfo> info)
+    {
+        return std::unique_ptr<SlaveDisconnect>(new SlaveDisconnect(std::move(info)));
+    }
+
+private:
+    SlaveDisconnect(std::unique_ptr<TaskInfo> info) : m_info(std::move(info))
+    {}
+
+    void Execute() override
+    {
+        m_info->m_driver->Disconnect();
+    }
+
+    std::unique_ptr<TaskInfo> m_info;
+};
 
 }	// end namespace hrd11
 

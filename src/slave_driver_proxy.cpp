@@ -33,18 +33,18 @@ static char* GetInt(int* i, char* src);
 static char* GetReqKey(FactoryKey* key, char* src);
 
 static void AddMessage(char *dest, const char* src);
-static char* AddRequestID(char* dest, FactoryKey key);
+static char* AddRequestType(char* dest, FactoryKey key);
 static char *AddInt(char *dest, const char* src);
 
 
-SlaveDriverProxy::SlaveDriverProxy(unsigned short port) :
-                                        m_socket(InitSocket()),
-                                        m_port(port)
+SlaveDriverProxy::SlaveDriverProxy(const std::string& ip,
+                                    unsigned short port) :
+        m_socket(InitSocket())
 {
     m_servaddr.sin_family = AF_INET;
-    m_servaddr.sin_port = htons(m_port);
+    m_servaddr.sin_port = htons(port);
     m_servaddr.sin_addr.s_addr = INADDR_ANY;
-    inet_aton("10.3.0.46", &(m_servaddr.sin_addr));
+    inet_aton(ip.c_str(), &(m_servaddr.sin_addr));
 
 }
 
@@ -98,7 +98,7 @@ void SlaveDriverProxy::SendReply(std::unique_ptr<DriverData> data)
     str = std::to_string(data->m_req_id);
     runner = AddInt(runner, str.c_str());
 
-    runner = AddRequestID(runner, data->m_key);
+    runner = AddRequestType(runner, data->m_key);
 
     *runner = '\0';
     ++runner;
@@ -107,7 +107,6 @@ void SlaveDriverProxy::SendReply(std::unique_ptr<DriverData> data)
     {
         AddMessage(runner, data->m_buff.data());
     }
-
 
     ssize_t tmp = sendto(m_socket, buf, sizeof(buf), 0,
                             (struct sockaddr *)&m_servaddr, sizeof(m_servaddr));
@@ -173,20 +172,14 @@ char* GetUint(unsigned int* ui, char* src)
 char* GetInt(int* i, char* src)
 {
     *i = strtoul(src, nullptr, 10);
+    // *i = std::stoi(src, nullptr, 10);
 
     return GetNextParse(src);
 }
 
 char* GetReqKey(FactoryKey* key, char* src)
 {
-    if (*src == '0') // aka READ
-    {
-        *key = FactoryKey::READ;
-    }
-    else
-    {
-        *key = FactoryKey::WRITE;
-    }
+    *key = static_cast<FactoryKey>(*src - '0');
 
     return (src + 3); // skip the current char and ';' and '\0'
 }
@@ -207,7 +200,7 @@ static char *AddInt(char *dest, const char* src)
     return ++dest;
 }
 
-static char* AddRequestID(char* dest, FactoryKey key)
+static char* AddRequestType(char* dest, FactoryKey key)
 {
     char id = '1';
 

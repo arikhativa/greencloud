@@ -61,5 +61,17 @@ std::unique_ptr<DriverData> MmapStorage::Read(
     return std::move(data);
 }
 
+size_t MmapStorage::GetSize()
+{
+    return m_size;
+}
+
+void MmapStorage::Disconnect()
+{
+    
+}
+
+
+
 
 }	// end namespace hrd11

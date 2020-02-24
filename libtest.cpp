@@ -4,7 +4,7 @@
 #include <memory>
 
 #include "globals.hpp"
-#include "logger.hpp"
+// #include "logger.hpp"
 #include "handleton.hpp"
 #include "factory.hpp"
 #include "tptask.hpp"
@@ -13,7 +13,7 @@
 #include "tp_sys_task.hpp"
 #include "nbd_tasks.hpp"
 
-#define LOG(lvl, msg) s_log->Write(lvl, msg, __FILE__, __LINE__)
+// #define LOG(lvl, msg) s_log->Write(lvl, msg, __FILE__, __LINE__)
 
 namespace hrd11
 {
@@ -31,9 +31,9 @@ void InitSharedObjet()
 {
     write(1, "L\n", 2);
 
-    Logger* s_log = Handleton<Logger>::GetInstance(LOG_PATH, LOG_LVL);
-
-    LOG(LOG_DEBUG, "in .so");
+    // Logger* s_log = Handleton<Logger>::GetInstance(LOG_PATH, LOG_LVL);
+    //
+    // LOG(LOG_DEBUG, "in .so");
 
     RequestEngine<TEMPLATE>* req_eng = Handleton<RequestEngine<TEMPLATE>>
                                                 ::GetInstance(PLUGINS_PATH);

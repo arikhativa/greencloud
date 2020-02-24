@@ -1,22 +1,17 @@
 Data & Time                ID      Source File                  Line  Type   ThreadId         Massage
-Thu Feb 13 16:41:13 2020   25756   greencloud.0.4.cpp           241   Debug  67399552  setting main thread signls
-Thu Feb 13 16:41:13 2020   25756   greencloud.0.4.cpp           252   Info   67399552  main thread signls are set
-Thu Feb 13 16:41:14 2020   25756   nbd_driver_proxy.cpp         81    Info   67399552  NBDDriverProxy() ctor is done
-Thu Feb 13 16:41:14 2020   25756   nbd_driver_proxy.cpp         222   Info   117344000  ThreadFuncSetNBD() begin
-Thu Feb 13 16:41:14 2020   25756   driver_proxy_gateway.cpp     22    Info   67399552  DriverProxyGateWay()
-Thu Feb 13 16:41:14 2020   25756   plug_and_play.cpp            33    Debug  67399552  DirMonitor()
-Thu Feb 13 16:41:14 2020   25756   plug_and_play.cpp            127   Debug  67399552  DL_Loader()
-Thu Feb 13 16:41:14 2020   25756   plug_and_play.cpp            68    Debug  293525248  Monitor()
-Thu Feb 13 16:41:14 2020   25756   plug_and_play.cpp            98    Debug  293525248  Monitor() - begin to monitor directory
-Thu Feb 13 16:41:19 2020   25756   driver_proxy_gateway.cpp     42    Info   67399552  DriverProxyGateWay::Read() - FactoryKey::DISCONNECT
-Thu Feb 13 16:41:19 2020   25756   plug_and_play.cpp            132   Debug  67399552  ~DL_Loader()
-Thu Feb 13 16:41:19 2020   25756   plug_and_play.cpp            38    Debug  67399552  ~DirMonitor()
-Thu Feb 13 16:41:19 2020   25756   plug_and_play.cpp            46    Debug  67399552  ~DirMonitor() - thread.join()
-Thu Feb 13 16:41:19 2020   25756   plug_and_play.cpp            118   Debug  293525248  Monitor() - exit SUCCESS
-Thu Feb 13 16:41:19 2020   25756   nbd_driver_proxy.cpp         195   Debug  276739840  NBDDriverProxy::Disconnect() begin
-Thu Feb 13 16:41:19 2020   25756   nbd_driver_proxy.cpp         203   Debug  276739840  NBDDriverProxy::Disconnect() joining thread
-Thu Feb 13 16:41:19 2020   25756   nbd_driver_proxy.cpp         246   Info   117344000  ThreadFuncSetNBD() done
-Thu Feb 13 16:41:19 2020   25756   plug_and_play.cpp            48    Debug  67399552  ~DirMonitor() - end
-Thu Feb 13 16:41:19 2020   25756   nbd_driver_proxy.cpp         205   Debug  276739840  NBDDriverProxy::Disconnect() joined thread
-Thu Feb 13 16:41:19 2020   25756   nbd_driver_proxy.cpp         210   Info   276739840  NBDDriverProxy::Disconnect() done
-Thu Feb 13 16:41:20 2020   25756   nbd_driver_proxy.cpp         92    Info   268347136  NBDDriverProxy() dtor is done
+Mon Feb 24 16:32:08 2020   10869   driver_proxy_gateway.cpp     22    Info   140076538931008  DriverProxyGateWay()
+Mon Feb 24 16:32:08 2020   10869   plug_and_play.cpp            35    Debug  140076538931008  DirMonitor()
+Mon Feb 24 16:32:08 2020   10869   plug_and_play.cpp            128   Debug  140076538931008  DL_Loader()
+Mon Feb 24 16:32:08 2020   10869   plug_and_play.cpp            70    Debug  140076373886720  Monitor()
+Mon Feb 24 16:32:08 2020   10869   plug_and_play.cpp            100   Debug  140076373886720  Monitor() - begin to monitor directory
+Mon Feb 24 16:39:17 2020   10869   plug_and_play.cpp            133   Debug  140076538931008  ~DL_Loader()
+Mon Feb 24 16:39:17 2020   10869   plug_and_play.cpp            40    Debug  140076538931008  ~DirMonitor()
+Mon Feb 24 16:39:17 2020   10869   plug_and_play.cpp            48    Debug  140076538931008  ~DirMonitor() - thread.join()
+Mon Feb 24 16:39:17 2020   10869   plug_and_play.cpp            120   Debug  140076373886720  Monitor() - exit SUCCESS
+Mon Feb 24 16:39:17 2020   10869   plug_and_play.cpp            50    Debug  140076538931008  ~DirMonitor() - end
+88416  ~DL_Loader()
+Mon Feb 24 16:32:08 2020   10863   plug_and_play.cpp            40    Debug  140326807788416  ~DirMonitor()
+Mon Feb 24 16:32:08 2020   10863   plug_and_play.cpp            48    Debug  140326807788416  ~DirMonitor() - thread.join()
+Mon Feb 24 16:32:08 2020   10863   nbd_driver_proxy.cpp         251   Info   140326782850816  ThreadFuncSetNBD() done
+Mon Feb 24 16:32:08 2020   10863   plug_and_play.cpp            120   Debug  140326766065408  Monitor() - exit SUCCESS
+Mon Feb 24 16:32:08 2020   10863   plug_and_play.cpp            50    Debug  140326807788416  ~DirMonitor() - end
